@@ -1,5 +1,129 @@
 // Type definitions for the Oil & Gas Frontend Application
 
+// Theme Configuration Types
+export interface ThemeConfig {
+  colors: ColorPalette;
+  typography: Typography;
+  hero: HeroConfig;
+  services: ServiceConfig;
+  stats: StatsConfig;
+  footer: FooterConfig;
+}
+
+export interface ColorPalette {
+  primary: string;
+  secondary: string;
+  accent: string;
+  background: string;
+  surface: string;
+  text: string;
+}
+
+export interface Typography {
+  fonts: {
+    heading: string;
+    body: string;
+    mono: string;
+  };
+  sizes: {
+    xs: string;
+    sm: string;
+    base: string;
+    lg: string;
+    xl: string;
+    '2xl': string;
+    '3xl': string;
+    '4xl': string;
+  };
+}
+
+export interface FooterConfig {
+  backgroundType: 'gradient' | 'solid' | 'image';
+  backgroundGradient?: string;
+  logo: string;
+  brand: FooterBrand | null;
+  layout: {
+    type: 'modern' | 'classic';
+    columns: {
+      desktop: number;
+      tablet: number;
+      mobile: number;
+    };
+    spacing: {
+      section: string;
+      columns: string;
+      content: string;
+    };
+  };
+  columns: FooterColumn[];
+}
+
+export interface FooterBrand {
+  name: string;
+  tagline: string;
+  description: string;
+  logo: string;
+  highlights: Array<{
+    icon: string;
+    title: string;
+    description: string;
+  }>;
+}
+
+export interface FooterColumn {
+  id: string;
+  title: string;
+  type: string;
+  icon?: string;
+  links?: Array<{
+    label: string;
+    href: string;
+    icon?: string;
+    isExternal?: boolean;
+    description?: string;
+  }>;
+  content?: any;
+  contact?: any;
+}
+
+export interface HeroConfig {
+  title: string;
+  subtitle: string;
+  backgroundImage: string;
+  ctaButtons: Array<{
+    label: string;
+    href: string;
+    variant: 'primary' | 'secondary';
+    icon?: string;
+  }>;
+}
+
+export interface ServiceConfig {
+  title: string;
+  subtitle: string;
+  items: Array<{
+    id: string;
+    title: string;
+    description: string;
+    icon: string;
+    features: string[];
+    ctaButton?: {
+      label: string;
+      href: string;
+    };
+  }>;
+}
+
+export interface StatsConfig {
+  title: string;
+  items: Array<{
+    number: string;
+    label: string;
+    description: string;
+    icon: string;
+  }>;
+}
+
 export interface User {
   id: string;
   email: string;

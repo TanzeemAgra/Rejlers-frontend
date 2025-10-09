@@ -818,7 +818,29 @@ export const finixpaThemeConfig = {
         content: "space-y-6"
       }
     },
-    brand: null,
+    brand: {
+      name: "REJLERS",
+      tagline: "Engineering Excellence Since 1942", 
+      description: "Leading provider of technical consulting services in energy, infrastructure, and industrial sectors. We deliver innovative solutions that drive sustainable development across Sweden and internationally.",
+      logo: "/Logo.png",
+      highlights: [
+        {
+          icon: "🏭",
+          title: "Industrial Solutions",
+          description: "Advanced industrial engineering and automation"
+        },
+        {
+          icon: "⚡",
+          title: "Energy Systems", 
+          description: "Sustainable energy and power solutions"
+        },
+        {
+          icon: "🌍",
+          title: "Environmental Impact",
+          description: "Eco-friendly engineering practices"
+        }
+      ]
+    },
     columns: [
       {
         id: "company",

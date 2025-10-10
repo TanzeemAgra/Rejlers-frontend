@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useResponsive } from '@/lib/responsive';
 import finixpaThemeConfig from '@/config/finixpaTheme';
+import { ChevronLeft, ChevronRight } from '@/components/icons';
 
 interface BannerSlide {
   id: number;
@@ -167,23 +168,23 @@ const HeroBanner: React.FC = () => {
         ))}
       </div>
 
-      {/* Mobile-Optimized Navigation Arrows */}
+      {/* Professional SVG Navigation Arrows */}
       {banner.showArrows && (
         <>
           <button
             onClick={prevSlide}
-            className="absolute left-2 sm:left-4 md:left-8 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 backdrop-blur-sm text-white rounded-full hover:bg-orange-500 transition-all duration-300 group touch-manipulation p-2 sm:p-3"
+            className="absolute left-2 sm:left-4 md:left-8 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 backdrop-blur-sm text-white rounded-full hover:bg-orange-500 transition-all duration-300 group touch-manipulation p-3 sm:p-4 flex items-center justify-center shadow-lg hover:shadow-xl"
             aria-label="Previous slide"
           >
-            <i className="icofont-simple-left text-lg sm:text-xl group-hover:text-white"></i>
+            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 group-hover:text-white transition-colors" />
           </button>
 
           <button
             onClick={nextSlide}
-            className="absolute right-2 sm:right-4 md:right-8 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 backdrop-blur-sm text-white rounded-full hover:bg-orange-500 transition-all duration-300 group touch-manipulation p-2 sm:p-3"
+            className="absolute right-2 sm:right-4 md:right-8 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 backdrop-blur-sm text-white rounded-full hover:bg-orange-500 transition-all duration-300 group touch-manipulation p-3 sm:p-4 flex items-center justify-center shadow-lg hover:shadow-xl"
             aria-label="Next slide"
           >
-            <i className="icofont-simple-right text-lg sm:text-xl group-hover:text-white"></i>
+            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 group-hover:text-white transition-colors" />
           </button>
         </>
       )}

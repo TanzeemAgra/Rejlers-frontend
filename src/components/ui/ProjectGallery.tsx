@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import finixpaThemeConfig from '@/config/finixpaTheme';
+import { ChevronDown } from '@/components/icons';
 
 interface ProjectItem {
   id: number;
@@ -110,7 +111,7 @@ const ProjectGallery: React.FC = () => {
               >
                 <span className="flex items-center justify-between">
                   <span className="font-semibold">Sort Gallery</span>
-                  <i className="icofont-simple-down"></i>
+                  <ChevronDown className="w-4 h-4 text-gray-600 transition-transform" />
                 </span>
               </button>
               <div id="mobile-filter-menu" className="hidden mt-2">

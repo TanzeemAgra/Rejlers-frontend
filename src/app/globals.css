@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import mobile-first responsive utilities */
+@import '../styles/mobile-responsive.css';
+
 /* Performance optimizations */
 @layer base {
   /* Smooth font rendering */

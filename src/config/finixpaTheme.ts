@@ -202,8 +202,57 @@ export const finixpaThemeConfig = {
     ]
   },
 
-  // Hero Banner/Slider Configuration
+  // Hero Banner/Slider Configuration - Enhanced for Mobile Responsiveness
   banner: {
+    // Advanced Responsive Configuration
+    responsive: {
+      // Mobile-first height settings
+      heights: {
+        mobile: "100vh", // Full viewport on mobile for maximum impact
+        tablet: "90vh",  // Slightly less on tablet
+        desktop: "100vh" // Full viewport on desktop
+      },
+      // Breakpoint-specific settings
+      breakpoints: {
+        mobile: {
+          textAlign: "center",
+          padding: "20px 16px",
+          titleSize: "text-2xl sm:text-3xl",
+          subtitleSize: "text-base sm:text-lg",
+          descriptionSize: "text-sm",
+          buttonLayout: "flex-col",
+          buttonSpacing: "space-y-3"
+        },
+        tablet: {
+          textAlign: "center", 
+          padding: "40px 32px",
+          titleSize: "text-3xl md:text-4xl",
+          subtitleSize: "text-lg md:text-xl",
+          descriptionSize: "text-base",
+          buttonLayout: "flex-row",
+          buttonSpacing: "space-x-4"
+        },
+        desktop: {
+          textAlign: "center",
+          padding: "60px 48px",
+          titleSize: "text-4xl lg:text-5xl xl:text-6xl",
+          subtitleSize: "text-xl lg:text-2xl",
+          descriptionSize: "text-lg",
+          buttonLayout: "flex-row",
+          buttonSpacing: "space-x-6"
+        }
+      },
+      // Content positioning
+      contentPosition: {
+        mobile: "items-center justify-center min-h-screen pt-20 pb-10",
+        tablet: "items-center justify-center min-h-screen pt-24 pb-12", 
+        desktop: "items-center justify-center min-h-screen pt-0 pb-0"
+      }
+    },
+    autoPlay: true,
+    autoPlayDelay: 6000,
+    showDots: true,
+    showArrows: true,
     slides: [
       {
         id: 1,
@@ -281,20 +330,6 @@ export const finixpaThemeConfig = {
         ]
       }
     ],
-    autoPlay: true,
-    autoPlayDelay: 5000,
-    showDots: false,
-    showArrows: false,
-    dimensions: {
-      height: 750, // Fixed height matching original template
-      wrapperWidth: 1370,
-      captionWidth: 750,
-      responsive: {
-        mobile: { height: 600 },
-        tablet: { height: 650 },
-        desktop: { height: 750 }
-      }
-    },
     styling: {
       overlay: "slider-overlay", // Custom gradient overlay
       wrapperClass: "slider-wrapper",

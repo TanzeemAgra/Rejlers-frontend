@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useResponsive } from '@/lib/responsive';
 import finixpaThemeConfig from '@/config/finixpaTheme';
-import { ChevronLeft, ChevronRight } from '@/components/icons';
+// Direct SVG implementation - No external icon dependencies
 
 interface BannerSlide {
   id: number;
@@ -175,16 +175,32 @@ const HeroBanner: React.FC = () => {
             onClick={prevSlide}
             className="absolute left-2 sm:left-4 md:left-8 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 backdrop-blur-sm text-white rounded-full hover:bg-orange-500 transition-all duration-300 group touch-manipulation p-3 sm:p-4 flex items-center justify-center shadow-lg hover:shadow-xl"
             aria-label="Previous slide"
+            title="Previous Slide - SVG Arrow"
           >
-            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 group-hover:text-white transition-colors" />
+            {/* DIRECT SVG - No Import Dependencies - Updated Oct 10, 2025 */}
+            <svg 
+              className="w-5 h-5 sm:w-6 sm:h-6 group-hover:text-white transition-colors" 
+              fill="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+            </svg>
           </button>
 
           <button
             onClick={nextSlide}
             className="absolute right-2 sm:right-4 md:right-8 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 backdrop-blur-sm text-white rounded-full hover:bg-orange-500 transition-all duration-300 group touch-manipulation p-3 sm:p-4 flex items-center justify-center shadow-lg hover:shadow-xl"
             aria-label="Next slide"
+            title="Next Slide - SVG Arrow"
           >
-            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 group-hover:text-white transition-colors" />
+            {/* DIRECT SVG - No Import Dependencies - Updated Oct 10, 2025 */}
+            <svg 
+              className="w-5 h-5 sm:w-6 sm:h-6 group-hover:text-white transition-colors" 
+              fill="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
+            </svg>
           </button>
         </>
       )}

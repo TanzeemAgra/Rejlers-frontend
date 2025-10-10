@@ -118,15 +118,24 @@ const Blog: React.FC = () => {
                 {/* Blog Meta */}
                 <div className="flex items-center space-x-4 mb-4 text-sm text-slate-500">
                   <div className="flex items-center space-x-2">
-                    <i className="icofont-clock-time text-orange-500"></i>
+                    {/* Clock Icon - Direct SVG */}
+                    <svg className="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"/>
+                    </svg>
                     <span>{formatDate(post.publishDate)}</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <i className="icofont-ui-user text-orange-500"></i>
+                    {/* User Icon - Direct SVG */}
+                    <svg className="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+                    </svg>
                     <span>{post.author.name}</span>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <i className="icofont-comment text-orange-500"></i>
+                    {/* Comment Icon - Direct SVG */}
+                    <svg className="w-4 h-4 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M9,22A1,1 0 0,1 8,21V18H4A2,2 0 0,1 2,16V4C2,2.89 2.9,2 4,2H20A2,2 0 0,1 22,4V16A2,2 0 0,1 20,18H13.9L10.2,21.71C10,21.9 9.75,22 9.5,22V22H9Z"/>
+                    </svg>
                     <span>{post.comments}</span>
                   </div>
                 </div>

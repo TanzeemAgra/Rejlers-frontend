@@ -210,7 +210,14 @@ const Header = () => {
                 href="/registration"
                 className="hidden sm:inline-flex items-center bg-gradient-to-r from-blue-600 to-blue-700 text-white px-3 lg:px-4 py-2 rounded-full text-xs lg:text-sm font-semibold hover:from-blue-700 hover:to-blue-800 transform hover:scale-105 transition-all duration-300 shadow-md touch-target focus:outline-none focus:ring-2 focus:ring-blue-300"
               >
-                <i className="icofont-user-alt-4 mr-1"></i>
+                {/* Professional User Icon - Direct SVG */}
+                <svg 
+                  className="w-3 h-3 lg:w-4 lg:h-4 mr-1" 
+                  fill="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+                </svg>
                 <span className="hidden md:inline">Registration</span>
                 <span className="md:hidden">Join</span>
               </a>

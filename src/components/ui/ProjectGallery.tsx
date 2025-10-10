@@ -195,14 +195,20 @@ const ProjectGallery: React.FC = () => {
                         className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center hover:bg-orange-600 transition-colors duration-300 transform hover:scale-110"
                         title="View Image"
                       >
-                        <i className="icofont-image text-white text-lg"></i>
+                        {/* Image Icon - Direct SVG */}
+                        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8.5,13.5L11,16.5L14.5,12L19,18H5M21,19V5C21,3.89 20.1,3 19,3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19Z"/>
+                        </svg>
                       </button>
                       <a
                         href={project.link}
                         className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/30 transition-colors duration-300 transform hover:scale-110"
                         title="View Details"
                       >
-                        <i className="icofont-external-link text-white text-lg"></i>
+                        {/* External Link Icon - Direct SVG */}
+                        <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M14,3V5H17.59L7.76,14.83L9.17,16.24L19,6.41V10H21V3M19,19H5V5H12V3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V12H19V19Z"/>
+                        </svg>
                       </a>
                     </div>
                   </div>
@@ -246,7 +252,10 @@ const ProjectGallery: React.FC = () => {
               onClick={closeLightbox}
               className="absolute top-4 right-4 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-colors"
             >
-              <i className="icofont-close-line text-2xl"></i>
+              {/* Close Icon - Direct SVG */}
+              <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+              </svg>
             </button>
           </div>
         </div>

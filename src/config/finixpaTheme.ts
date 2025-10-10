@@ -512,24 +512,7 @@ export const finixpaThemeConfig = {
       number: "+00 0123456789",
       href: "tel:+000123456789",
       show: true
-    },
-    stats: [
-      {
-        icon: "🕒",
-        title: "24/7 Support",
-        description: "Round the clock assistance"
-      },
-      {
-        icon: "👥", 
-        title: "Expert Team",
-        description: "Professional consultants"
-      },
-      {
-        icon: "⚡",
-        title: "Fast Response",
-        description: "Quick project delivery"
-      }
-    ]
+    }
   },
 
   // Projects/Portfolio Section - Company Project Gallery
@@ -945,14 +928,14 @@ export const finixpaThemeConfig = {
         id: "contact",
         title: "Contact Information",
         type: "enhanced-contact",
-        icon: "icofont-phone-circle",
+        icon: "phone-circle",
         contact: {
           headline: "Ready to Start Your Project?",
           subtitle: "Get professional consultation today",
           details: [
             {
               type: "address",
-              icon: "icofont-location-pin",
+              icon: "location-pin",
               label: "Head Office",
               primary: "123 Industrial Avenue",
               secondary: "Manufacturing District, NY 10001",
@@ -960,7 +943,7 @@ export const finixpaThemeConfig = {
             },
             {
               type: "phone",
-              icon: "icofont-phone",
+              icon: "phone",
               label: "Phone Support",
               primary: "+1 (555) 0123-456",
               secondary: "24/7 Emergency Line",
@@ -968,7 +951,7 @@ export const finixpaThemeConfig = {
             },
             {
               type: "email",
-              icon: "icofont-envelope",
+              icon: "envelope",
               label: "Email Support", 
               primary: "info@rejlers.com",
               secondary: "Response within 2 hours",

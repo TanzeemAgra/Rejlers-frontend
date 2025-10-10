@@ -804,7 +804,8 @@ export const finixpaThemeConfig = {
   footer: {
     backgroundType: "gradient", // "gradient", "solid", "image"
     backgroundGradient: "from-slate-800 via-slate-900 to-slate-950",
-    logo: "/images/logo/ft-logo.png",
+    logo: null, // Disabled - no footer logo/branding section
+    showBranding: false, // PERMANENT: Disable footer branding section
     layout: {
       type: "modern", // "modern", "classic"
       columns: {
@@ -818,7 +819,7 @@ export const finixpaThemeConfig = {
         content: "space-y-6"
       }
     },
-    brand: null,
+    brand: null, // PERMANENT: No brand section in footer
     columns: [
       {
         id: "company",

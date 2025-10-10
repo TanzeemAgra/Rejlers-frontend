@@ -12,36 +12,25 @@ const Footer: React.FC = () => {
   return (
     <footer className="bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 text-white relative overflow-hidden">
       <div className="container mx-auto px-4 relative z-10 py-16">
-        {footer.brand && (
+        {/* PERMANENT REMOVAL: Footer branding section permanently disabled */}
+        {footer.showBranding && footer.logo && (
           <div className="mb-16">
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-12">
               <div className="lg:w-1/2">
                 <div className="flex items-center space-x-4 mb-6">
                   <img 
-                    src={footer.brand.logo}
-                    alt={footer.brand.name}
+                    src={footer.logo}
+                    alt="Company Logo"
                     className="h-16 w-auto"
                   />
                   <div>
-                    <h2 className="text-3xl font-bold text-white">{footer.brand.name}</h2>
-                    <p className="text-orange-400 font-semibold text-lg">{footer.brand.tagline}</p>
+                    <h2 className="text-3xl font-bold text-white">REJLERS</h2>
+                    <p className="text-orange-400 font-semibold text-lg">Industrial & Factorial Business</p>
                   </div>
                 </div>
                 <p className="text-slate-300 leading-relaxed text-lg">
-                  {footer.brand.description}
+                  Professional industrial and factorial business solutions with cutting-edge technology
                 </p>
-              </div>
-              <div className="lg:w-1/2">
-                <div className="grid gap-4">
-                  {footer.brand.highlights.map((highlight: any, idx: number) => (
-                    <div key={idx} className="flex items-center space-x-4 p-4 bg-slate-800/40 rounded-xl border border-slate-700 hover:border-orange-500/50 transition-all duration-300">
-                      <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center">
-                        <span className="text-white text-2xl">{highlight.icon}</span>
-                      </div>
-                      <span className="text-slate-200 font-medium text-lg">{highlight.text}</span>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           </div>

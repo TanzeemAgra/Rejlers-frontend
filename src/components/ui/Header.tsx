@@ -1,30 +1,76 @@
 ﻿"use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import finixpaThemeConfig from "@/config/finixpaTheme";
+import { useResponsive, performanceUtils } from "@/lib/responsive";
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isTopBarVisible, setIsTopBarVisible] = useState(true);
   const { navigation, site } = finixpaThemeConfig;
+  const { isMobile, isTablet, isDesktop } = useResponsive();
+  const lastScrollY = useRef(0);
+
+  // Optimized scroll handler with throttling and smart hiding
+  const handleScroll = useCallback(
+    performanceUtils.throttle(() => {
+      const currentScrollY = window.scrollY;
+      
+      // Add backdrop blur effect when scrolled
+      setIsScrolled(currentScrollY > 50);
+      
+      // Hide top bar on mobile when scrolling down for more space
+      if (isMobile) {
+        if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+          setIsTopBarVisible(false);
+        } else {
+          setIsTopBarVisible(true);
+        }
+      }
+      
+      lastScrollY.current = currentScrollY;
+    }, 10),
+    [isMobile]
+  );
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [handleScroll]);
+
+  // Close mobile menu when switching to desktop
+  useEffect(() => {
+    if (isDesktop && isMobileMenuOpen) {
+      setIsMobileMenuOpen(false);
+    }
+  }, [isDesktop, isMobileMenuOpen]);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isMobileMenuOpen]);
 
   return (
     <header className="header relative z-50">
-      <div className="header-top bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white py-1 text-sm border-b border-blue-700/50">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-6">
+      {/* Top Bar - Hide on mobile when scrolling for better UX */}
+      <div className={`header-top bg-gradient-to-r from-blue-900 via-blue-800 to-blue-900 text-white transition-all duration-300 ${
+        isTopBarVisible ? 'py-1 opacity-100' : 'py-0 opacity-0 h-0 overflow-hidden'
+      } text-xs sm:text-sm border-b border-blue-700/50`}>
+        <div className="container-responsive">
+          <div className="flex justify-between items-center flex-wrap gap-2">
+            <div className="flex items-center space-x-2 sm:space-x-4 lg:space-x-6">
               <a 
                 href={navigation.topBar.leftContent.helpLink} 
-                className="text-blue-100 font-medium flex items-center hover:text-white hover:bg-blue-700/40 px-3 py-1 rounded-full transition-all duration-300 group cursor-pointer"
+                className="hidden sm:flex text-blue-100 font-medium items-center hover:text-white hover:bg-blue-700/40 px-2 sm:px-3 py-1 rounded-full transition-all duration-300 group cursor-pointer touch-target"
               >
                 <svg className="w-4 h-4 fill-current text-blue-300 group-hover:text-white transition-colors duration-300 mr-2" viewBox="0 0 24 24">
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
@@ -34,12 +80,12 @@ const Header = () => {
                   <path d="M9 5l7 7-7 7"/>
                 </svg>
               </a>
-              <div className="flex space-x-4">
+              <div className="flex space-x-1 sm:space-x-2 lg:space-x-4">
                 {navigation.topBar.leftContent.contacts.map((contact, index) => (
                   <a 
                     key={index}
                     href={contact.link}
-                    className="flex items-center space-x-2 text-blue-100 hover:text-white hover:bg-blue-700/40 px-3 py-1 rounded-full transition-all duration-300 group"
+                    className="flex items-center space-x-1 sm:space-x-2 text-blue-100 hover:text-white hover:bg-blue-700/40 px-2 sm:px-3 py-1 rounded-full transition-all duration-300 group touch-target"
                   >
                     {/* Professional SVG icons */}
                     {contact.link.includes('tel:') ? (
@@ -51,25 +97,25 @@ const Header = () => {
                         <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
                       </svg>
                     )}
-                    <span className="font-medium">{contact.text}</span>
+                    <span className="font-medium hidden sm:inline">{contact.text}</span>
                   </a>
                 ))}
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <span className="text-blue-100 font-medium flex items-center">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <span className="text-blue-100 font-medium hidden md:flex items-center">
                 <svg className="w-4 h-4 fill-current text-blue-300 mr-2" viewBox="0 0 24 24">
                   <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/>
                 </svg>
                 {navigation.topBar.rightContent.socialText}
               </span>
-              <div className="flex space-x-2">
+              <div className="flex space-x-1 sm:space-x-2">
                 {navigation.topBar.rightContent.socialLinks.map((social, index) => (
                   <a
                     key={index}
                     href={social.link}
-                    className="w-8 h-8 bg-blue-700/40 hover:bg-white/20 text-blue-100 hover:text-white rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 text-sm font-bold"
+                    className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 bg-blue-700/40 hover:bg-white/20 text-blue-100 hover:text-white rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 text-xs sm:text-sm font-bold touch-target"
                     target="_blank"
                     rel="noopener noreferrer"
                     title={social.link.includes('facebook') ? 'Facebook' : 
@@ -112,88 +158,179 @@ const Header = () => {
         </div>
       </div>
 
-      <nav className={"main-nav sticky top-0 w-full z-40 transition-all duration-300 " + (isScrolled ? "bg-white/95 backdrop-blur-lg shadow-xl border-b border-gray-200" : "bg-white/90 backdrop-blur-md shadow-lg")}>
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center py-1">
+      {/* Main Navigation with Enhanced Responsiveness */}
+      <nav className={`main-nav sticky top-0 w-full z-40 transition-all duration-300 ${
+        isScrolled 
+          ? "bg-white/95 backdrop-blur-lg shadow-xl border-b border-gray-200" 
+          : "bg-white/90 backdrop-blur-md shadow-lg"
+      }`}>
+        <div className="container-responsive">
+          <div className="flex justify-between items-center py-2 sm:py-3 lg:py-4">
+            {/* Logo - Responsive sizing */}
             <div className="flex items-center">
-              <a href="/" className="group">
+              <a href="/" className="group focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg">
                 <img 
                   src={site.logo.main} 
                   alt={site.name}
-                  className="h-16 md:h-18 lg:h-20 w-auto transition-all duration-300 group-hover:scale-105"
+                  className="h-10 sm:h-12 md:h-14 lg:h-16 xl:h-18 w-auto transition-all duration-300 group-hover:scale-105"
+                  loading="eager"
+                  width="auto"
+                  height={isMobile ? 40 : isTablet ? 48 : 64}
                 />
               </a>
             </div>
 
-            <nav className="hidden lg:flex items-center space-x-1">
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center space-x-1 xl:space-x-2">
               {navigation.mainMenu.map((item, index) => (
                 <a
                   key={index}
                   href={item.href}
-                  className={"px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-full " + (item.label === "Home" ? "text-white bg-gradient-to-r from-blue-600 to-blue-700 shadow-md" : "text-gray-700 hover:text-blue-700 hover:bg-blue-50")}
+                  className={`px-3 xl:px-4 py-2 text-sm xl:text-base font-semibold transition-all duration-300 rounded-full touch-target focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    item.label === "Home" 
+                      ? "text-white bg-gradient-to-r from-blue-600 to-blue-700 shadow-md hover:from-blue-700 hover:to-blue-800" 
+                      : "text-gray-700 hover:text-blue-700 hover:bg-blue-50 active:bg-blue-100"
+                  }`}
                 >
                   {item.label}
                 </a>
               ))}
             </nav>
 
-            <div className="flex items-center space-x-3">
+            {/* Action Buttons & Mobile Menu Toggle */}
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <a
                 href="/login"
-                className="hidden md:inline-flex items-center text-blue-700 border border-blue-700 px-4 py-2 rounded-full text-sm font-semibold hover:bg-blue-50 transition-all duration-300"
+                className="hidden md:inline-flex items-center text-blue-700 border border-blue-700 px-3 lg:px-4 py-2 rounded-full text-xs lg:text-sm font-semibold hover:bg-blue-50 transition-all duration-300 touch-target focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 Login
               </a>
               
               <a
                 href="/registration"
-                className="hidden md:inline-flex items-center bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-full text-sm font-semibold hover:from-blue-700 hover:to-blue-800 transform hover:scale-105 transition-all duration-300 shadow-md"
+                className="hidden sm:inline-flex items-center bg-gradient-to-r from-blue-600 to-blue-700 text-white px-3 lg:px-4 py-2 rounded-full text-xs lg:text-sm font-semibold hover:from-blue-700 hover:to-blue-800 transform hover:scale-105 transition-all duration-300 shadow-md touch-target focus:outline-none focus:ring-2 focus:ring-blue-300"
               >
                 <i className="icofont-user-alt-4 mr-1"></i>
-                Registration
+                <span className="hidden md:inline">Registration</span>
+                <span className="md:hidden">Join</span>
               </a>
               
+              {/* Enhanced Mobile Menu Button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors duration-200"
+                className="lg:hidden flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gray-100 hover:bg-gray-200 active:bg-gray-300 transition-colors duration-200 touch-target focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+                aria-expanded={isMobileMenuOpen}
               >
-                <i className={isMobileMenuOpen ? "icofont-close text-gray-700" : "icofont-navigation-menu text-gray-700"}></i>
+                <div className="relative w-5 h-5">
+                  <span className={`absolute h-0.5 w-5 bg-gray-700 transform transition-all duration-300 ${
+                    isMobileMenuOpen ? 'rotate-45 top-2' : 'top-1'
+                  }`}></span>
+                  <span className={`absolute h-0.5 w-5 bg-gray-700 top-2 transition-all duration-300 ${
+                    isMobileMenuOpen ? 'opacity-0' : 'opacity-100'
+                  }`}></span>
+                  <span className={`absolute h-0.5 w-5 bg-gray-700 transform transition-all duration-300 ${
+                    isMobileMenuOpen ? '-rotate-45 top-2' : 'top-3'
+                  }`}></span>
+                </div>
               </button>
             </div>
           </div>
         </div>
 
+        {/* Enhanced Mobile Menu with Better UX */}
         {isMobileMenuOpen && (
-          <div className="lg:hidden bg-white border-t border-gray-200">
-            <div className="container mx-auto px-4 py-4">
-              <nav className="space-y-2">
-                {navigation.mainMenu.map((item, index) => (
-                  <a
-                    key={index}
-                    href={item.href}
-                    className="block px-4 py-3 rounded-lg text-gray-700 hover:bg-blue-50 hover:text-blue-700 font-medium transition-colors duration-200"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {item.label}
-                  </a>
-                ))}
-                <div className="flex flex-col space-y-2 mt-4">
-                  <a
-                    href="/login"
-                    className="block px-4 py-3 border border-blue-600 text-blue-600 rounded-lg font-semibold text-center hover:bg-blue-50 transition-colors duration-200"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Login
-                  </a>
-                  <a
-                    href="/registration"
-                    className="block px-4 py-3 bg-blue-600 text-white rounded-lg font-semibold text-center hover:bg-blue-700 transition-colors duration-200"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Registration
-                  </a>
-                </div>
-              </nav>
+          <div className="lg:hidden">
+            {/* Backdrop */}
+            <div 
+              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30"
+              onClick={() => setIsMobileMenuOpen(false)}
+            ></div>
+            
+            {/* Menu Panel */}
+            <div className="relative z-40 bg-white border-t border-gray-200 shadow-xl">
+              <div className="container-responsive py-4 safe-area-bottom">
+                <nav className="space-y-1">
+                  {navigation.mainMenu.map((item, index) => (
+                    <a
+                      key={index}
+                      href={item.href}
+                      className={`block px-4 py-4 rounded-xl font-medium transition-all duration-200 touch-target ${
+                        item.label === "Home"
+                          ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg"
+                          : "text-gray-700 hover:bg-blue-50 hover:text-blue-700 active:bg-blue-100"
+                      }`}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-base">{item.label}</span>
+                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </a>
+                  ))}
+                  
+                  {/* Mobile Action Buttons */}
+                  <div className="pt-4 mt-4 border-t border-gray-100 space-y-3">
+                    <a
+                      href="/login"
+                      className="block px-4 py-4 border-2 border-blue-600 text-blue-600 rounded-xl font-semibold text-center hover:bg-blue-50 active:bg-blue-100 transition-all duration-200 touch-target"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <div className="flex items-center justify-center">
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                        </svg>
+                        Login to Account
+                      </div>
+                    </a>
+                    <a
+                      href="/registration"
+                      className="block px-4 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl font-semibold text-center hover:from-blue-700 hover:to-blue-800 active:from-blue-800 active:to-blue-900 transition-all duration-200 shadow-lg touch-target"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      <div className="flex items-center justify-center">
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                        </svg>
+                        Join REJLERS
+                      </div>
+                    </a>
+                  </div>
+                  
+                  {/* Mobile Contact Info */}
+                  <div className="pt-4 mt-4 border-t border-gray-100">
+                    <div className="px-4 py-2">
+                      <p className="text-sm font-medium text-gray-900 mb-2">Get in Touch</p>
+                      <div className="space-y-2">
+                        {navigation.topBar.leftContent.contacts.map((contact, index) => (
+                          <a
+                            key={index}
+                            href={contact.link}
+                            className="flex items-center text-sm text-gray-600 hover:text-blue-600 transition-colors duration-200"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            <div className="w-4 h-4 mr-3 flex-shrink-0">
+                              {contact.link.includes('tel:') ? (
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                                </svg>
+                              ) : (
+                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                                </svg>
+                              )}
+                            </div>
+                            <span>{contact.text}</span>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </nav>
+              </div>
             </div>
           </div>
         )}

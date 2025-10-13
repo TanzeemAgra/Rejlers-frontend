@@ -127,10 +127,19 @@ class ApiClient {
   }
 }
 
+// Dynamic API URL based on environment
+const getApiUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_BASE_URL) {
+    return process.env.NEXT_PUBLIC_API_BASE_URL;
+  }
+  
+  return process.env.NODE_ENV === 'production'
+    ? 'https://rejlers-backend-production.up.railway.app/api/v1'
+    : 'http://localhost:8000/api/v1';
+};
+
 // Create API client instance
-const apiClient = new ApiClient(
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api/v1'
-);
+const apiClient = new ApiClient(getApiUrl());
 
 // API Endpoints
 export const API_ENDPOINTS = {

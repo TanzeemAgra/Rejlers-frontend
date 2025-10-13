@@ -1,10 +1,41 @@
 import type { AppConfig } from '@/types';
 
+// Environment-based configuration with soft coding principles
+const isDevelopment = process.env.NODE_ENV === 'development';
+const isProduction = process.env.NODE_ENV === 'production';
+
+// API Configuration with Railway backend support
+const getApiBaseUrl = () => {
+  if (process.env.NEXT_PUBLIC_API_BASE_URL) {
+    return process.env.NEXT_PUBLIC_API_BASE_URL;
+  }
+  
+  // Fallback based on environment
+  if (isProduction) {
+    return 'https://rejlers-backend-production.up.railway.app/api/v1';
+  }
+  
+  return 'http://localhost:8000/api/v1';
+};
+
+const getWebSocketUrl = () => {
+  if (process.env.NEXT_PUBLIC_WS_URL) {
+    return process.env.NEXT_PUBLIC_WS_URL;
+  }
+  
+  // Fallback based on environment
+  if (isProduction) {
+    return 'wss://rejlers-backend-production.up.railway.app/ws';
+  }
+  
+  return 'ws://localhost:8000/ws';
+};
+
 // Environment Configuration with Type Safety
 export const config: AppConfig = {
   // API Configuration
   api: {
-    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api/v1',
+    baseUrl: getApiBaseUrl(),
     timeout: 30000,
     retries: 3,
   },
@@ -36,7 +67,7 @@ export const config: AppConfig = {
   
   // Monitoring & Alerts
   monitoring: {
-    websocketUrl: process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/ws',
+    websocketUrl: getWebSocketUrl(),
     alertThresholds: {
       pressure: { critical: 1000, warning: 800 },
       temperature: { critical: 150, warning: 120 },

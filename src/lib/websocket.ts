@@ -244,9 +244,19 @@ class WebSocketManager {
   }
 }
 
+// Dynamic WebSocket URL based on environment
+const getWebSocketUrl = () => {
+  if (process.env.NEXT_PUBLIC_WS_URL) {
+    return process.env.NEXT_PUBLIC_WS_URL;
+  }
+  
+  return process.env.NODE_ENV === 'production'
+    ? 'wss://rejlers-backend-production.up.railway.app/ws'
+    : 'ws://localhost:8000/ws';
+};
+
 // Create WebSocket manager instance
-const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:8000/ws';
-export const websocketManager = new WebSocketManager({ url: wsUrl });
+export const websocketManager = new WebSocketManager({ url: getWebSocketUrl() });
 
 // Real-time data hooks and utilities
 export class RealtimeDataManager {

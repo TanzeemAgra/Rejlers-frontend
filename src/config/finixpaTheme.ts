@@ -468,29 +468,56 @@ export const finixpaThemeConfig = {
     features: [
       {
         id: 1,
-        icon: "🚀",
+        icon: "rocket",
+        iconType: "svg", // "svg", "emoji", "custom"
         title: "Rapid Solutions",
-        description: "Fast, secure, and verified industrial automation solutions that deliver results."
+        description: "Fast, secure, and verified industrial automation solutions that deliver results.",
+        gradient: { from: "orange-500", to: "red-500" },
+        animation: "bounce",
+        highlight: false
       },
       {
         id: 2,
-        icon: "🏆", 
+        icon: "trophy", 
+        iconType: "svg",
         title: "Award-Winning Excellence",
-        description: "Recognized industry leader with proven track record across multiple sectors."
+        description: "Recognized industry leader with proven track record across multiple sectors.",
+        gradient: { from: "blue-500", to: "purple-600" },
+        animation: "pulse",
+        highlight: true
       },
       {
         id: 3,
-        icon: "🔧",
+        icon: "support",
+        iconType: "svg",
         title: "24/7 Expert Support",
-        description: "Round-the-clock technical assistance from certified engineering professionals."
+        description: "Round-the-clock technical assistance from certified engineering professionals.",
+        gradient: { from: "green-500", to: "emerald-600" },
+        animation: "spin",
+        highlight: false
       },
       {
         id: 4,
-        icon: "📜",
+        icon: "certificate",
+        iconType: "svg",
         title: "ISO Certified Quality",
-        description: "Internationally certified processes ensuring highest standards and reliability."
+        description: "Internationally certified processes ensuring highest standards and reliability.",
+        gradient: { from: "purple-500", to: "pink-600" },
+        animation: "ping",
+        highlight: true
       }
-    ]
+    ],
+    design: {
+      cardStyle: "floating", // "floating", "minimal", "bordered", "glass"
+      iconStyle: "gradient", // "gradient", "solid", "outline", "neon"
+      hoverEffect: "lift", // "lift", "scale", "glow", "rotate"
+      spacing: "comfortable", // "compact", "comfortable", "spacious"
+      animations: {
+        enabled: true,
+        entrance: "fadeInUp", // "fadeIn", "fadeInUp", "slideIn", "zoomIn"
+        hover: "enhanced" // "subtle", "enhanced", "dramatic"
+      }
+    }
   },
 
   // Call to Action Section  

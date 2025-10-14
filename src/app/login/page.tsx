@@ -71,7 +71,11 @@ const LoginPage: React.FC = () => {
       });
       
       if (loginResponse.access) {
-        console.log('Login successful');
+        console.log('Login successful', {
+          user: loginResponse.email,
+          role: loginResponse.role,
+          isAdmin: loginResponse.is_superuser || loginResponse.is_staff
+        });
         
         // Store remember me preference
         if (formData.rememberMe) {
@@ -80,8 +84,13 @@ const LoginPage: React.FC = () => {
           localStorage.removeItem('rememberMe');
         }
         
-        // Redirect to dashboard
-        window.location.href = '/dashboard';
+        // Redirect based on user role
+        if (loginResponse.is_superuser || loginResponse.is_staff) {
+          window.location.href = '/dashboard';
+        } else {
+          // Regular user - redirect to appropriate page
+          window.location.href = '/dashboard';
+        }
       } else {
         setErrors({ email: 'Invalid credentials. Please check your email and password.' });
       }

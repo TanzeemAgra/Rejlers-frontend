@@ -9,7 +9,15 @@ export interface LoginCredentials {
 export interface LoginResponse {
   access: string;
   refresh: string;
-  user: {
+  user_id: string;
+  username: string;
+  email: string;
+  full_name: string;
+  role: string;
+  accessible_modules: string[];
+  is_staff: boolean;
+  is_superuser: boolean;
+  user?: {
     id: number;
     email: string;
     first_name: string;
@@ -67,6 +75,9 @@ class AuthService {
       // Store tokens in localStorage
       this.storeTokens(data.access, data.refresh);
       
+      // Store user data from login response
+      this.storeUserData(data);
+      
       return data;
     } catch (error) {
       console.error('Login error:', error);
@@ -101,6 +112,19 @@ class AuthService {
   // Get current user profile
   async getCurrentUser(): Promise<User | null> {
     try {
+      // First try to get user data from localStorage (stored during login)
+      if (typeof window !== 'undefined') {
+        const storedUserData = localStorage.getItem('user_data');
+        if (storedUserData) {
+          try {
+            return JSON.parse(storedUserData);
+          } catch (e) {
+            console.warn('Failed to parse stored user data');
+          }
+        }
+      }
+
+      // Fallback to API call if no stored data
       const token = this.getAccessToken();
       if (!token) return null;
 
@@ -121,7 +145,12 @@ class AuthService {
         return null;
       }
 
-      return await response.json();
+      const userData = await response.json();
+      // Store the fetched user data for future use
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user_data', JSON.stringify(userData));
+      }
+      return userData;
     } catch (error) {
       console.error('Get current user error:', error);
       return null;
@@ -157,7 +186,7 @@ class AuthService {
     }
   }
 
-  // Token management
+  // Token and User Data management
   private storeTokens(accessToken: string, refreshToken: string): void {
     if (typeof window !== 'undefined') {
       localStorage.setItem('access_token', accessToken);
@@ -165,10 +194,28 @@ class AuthService {
     }
   }
 
+  private storeUserData(loginResponse: LoginResponse): void {
+    if (typeof window !== 'undefined') {
+      // Store user information from login response
+      const userData = {
+        user_id: loginResponse.user_id,
+        username: loginResponse.username,
+        email: loginResponse.email,
+        full_name: loginResponse.full_name,
+        role: loginResponse.role,
+        accessible_modules: loginResponse.accessible_modules,
+        is_staff: loginResponse.is_staff,
+        is_superuser: loginResponse.is_superuser
+      };
+      localStorage.setItem('user_data', JSON.stringify(userData));
+    }
+  }
+
   private clearTokens(): void {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
+      localStorage.removeItem('user_data');
     }
   }
 
@@ -184,6 +231,33 @@ class AuthService {
       return localStorage.getItem('refresh_token');
     }
     return null;
+  }
+
+  // Get stored user data synchronously (no API call)
+  getUserData(): any | null {
+    if (typeof window !== 'undefined') {
+      const storedUserData = localStorage.getItem('user_data');
+      if (storedUserData) {
+        try {
+          return JSON.parse(storedUserData);
+        } catch (e) {
+          console.warn('Failed to parse stored user data');
+        }
+      }
+    }
+    return null;
+  }
+
+  // Check if user has admin/staff access
+  isAdmin(): boolean {
+    const userData = this.getUserData();
+    return userData?.is_superuser || userData?.is_staff || false;
+  }
+
+  // Get user role
+  getUserRole(): string | null {
+    const userData = this.getUserData();
+    return userData?.role || null;
   }
 
   // Check if user is authenticated

@@ -34,14 +34,24 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const initializeDashboard = async () => {
       try {
-        // Check if user is authenticated
-        const userInfo = authService.getCurrentUser();
-        if (!userInfo) {
+        // Check if user is authenticated and get stored user data
+        if (!authService.isAuthenticated()) {
           window.location.href = '/login';
           return;
         }
 
-        setUser(userInfo);
+        const userInfo = authService.getUserData();
+        if (!userInfo) {
+          // If no stored user data, try to fetch it
+          const fetchedUser = await authService.getCurrentUser();
+          if (!fetchedUser) {
+            window.location.href = '/login';
+            return;
+          }
+          setUser(fetchedUser);
+        } else {
+          setUser(userInfo);
+        }
 
         // Fetch dashboard data
         const [dashboardStats, recentActivities] = await Promise.all([

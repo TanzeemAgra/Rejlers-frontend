@@ -171,10 +171,29 @@ const Dashboard: React.FC = () => {
         <div className="flex-1 p-6 overflow-auto">
           {/* Welcome Section */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">
-            Welcome back, {user?.first_name || user?.username || 'User'}!
-          </h2>
-          <p className="text-slate-600">Here's what's happening in your organization today.</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                Welcome back, {user?.first_name || user?.username || 'User'}!
+              </h2>
+              <p className="text-slate-600">
+                {user?.is_superuser 
+                  ? "System Administrator - You have full access to all system features and controls."
+                  : user?.is_staff
+                  ? "Administrator - You have elevated access to manage the organization."
+                  : "Here's what's happening in your organization today."
+                }
+              </p>
+            </div>
+            {(user?.is_superuser || user?.is_staff) && (
+              <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg border border-purple-200">
+                <Shield className="w-5 h-5 text-purple-600" />
+                <span className="text-sm font-medium text-purple-700">
+                  {user?.is_superuser ? 'Super Admin' : 'Administrator'}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Stats Grid */}
@@ -321,7 +340,117 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick Actions */}
+          </div>
+
+        {/* Super Admin Section */}
+        {user?.is_superuser && (
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-lg border border-purple-200 mb-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Shield className="w-6 h-6 text-purple-600" />
+                <h3 className="text-lg font-semibold text-purple-900">Super Administrator Controls</h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* System Health */}
+                <div className="bg-white p-4 rounded-lg shadow-sm border">
+                  <div className="flex items-center justify-between mb-2">
+                    <Activity className="w-5 h-5 text-green-600" />
+                    <span className="text-xs font-medium text-slate-600">SYSTEM</span>
+                  </div>
+                  <div className="text-xl font-bold text-slate-900">98.5%</div>
+                  <div className="text-xs text-slate-600">System Health</div>
+                </div>
+
+                {/* Total Users */}
+                <div className="bg-white p-4 rounded-lg shadow-sm border">
+                  <div className="flex items-center justify-between mb-2">
+                    <Users className="w-5 h-5 text-blue-600" />
+                    <span className="text-xs font-medium text-slate-600">USERS</span>
+                  </div>
+                  <div className="text-xl font-bold text-slate-900">247</div>
+                  <div className="text-xs text-slate-600">Total Users</div>
+                </div>
+
+                {/* Security Alerts */}
+                <div className="bg-white p-4 rounded-lg shadow-sm border">
+                  <div className="flex items-center justify-between mb-2">
+                    <AlertTriangle className="w-5 h-5 text-red-600" />
+                    <span className="text-xs font-medium text-slate-600">SECURITY</span>
+                  </div>
+                  <div className="text-xl font-bold text-slate-900">3</div>
+                  <div className="text-xs text-slate-600">Alerts</div>
+                </div>
+
+                {/* Server Uptime */}
+                <div className="bg-white p-4 rounded-lg shadow-sm border">
+                  <div className="flex items-center justify-between mb-2">
+                    <BarChart3 className="w-5 h-5 text-purple-600" />
+                    <span className="text-xs font-medium text-slate-600">UPTIME</span>
+                  </div>
+                  <div className="text-xl font-bold text-slate-900">99.9%</div>
+                  <div className="text-xs text-slate-600">Server Uptime</div>
+                </div>
+              </div>
+
+              {/* Super Admin Quick Actions */}
+              <div className="mt-6">
+                <h4 className="text-sm font-semibold text-purple-900 mb-3">Quick Actions</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <button className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-purple-50 border border-purple-200 rounded-lg text-sm font-medium text-purple-700 transition-colors">
+                    <Users className="w-4 h-4" />
+                    Manage Users
+                  </button>
+                  <button className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-purple-50 border border-purple-200 rounded-lg text-sm font-medium text-purple-700 transition-colors">
+                    <Settings className="w-4 h-4" />
+                    System Config
+                  </button>
+                  <button className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-purple-50 border border-purple-200 rounded-lg text-sm font-medium text-purple-700 transition-colors">
+                    <FileText className="w-4 h-4" />
+                    View Logs
+                  </button>
+                  <button className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-purple-50 border border-purple-200 rounded-lg text-sm font-medium text-purple-700 transition-colors">
+                    <BarChart3 className="w-4 h-4" />
+                    Analytics
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Admin Section */}
+        {user?.is_staff && !user?.is_superuser && (
+          <div className="mb-8">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200 mb-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Shield className="w-6 h-6 text-blue-600" />
+                <h3 className="text-lg font-semibold text-blue-900">Administrator Controls</h3>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <button className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-700 transition-colors">
+                  <Users className="w-4 h-4" />
+                  Team Management
+                </button>
+                <button className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-700 transition-colors">
+                  <FileText className="w-4 h-4" />
+                  Reports
+                </button>
+                <button className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-700 transition-colors">
+                  <Settings className="w-4 h-4" />
+                  Settings
+                </button>
+                <button className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-blue-50 border border-blue-200 rounded-lg text-sm font-medium text-blue-700 transition-colors">
+                  <BarChart3 className="w-4 h-4" />
+                  Analytics
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Quick Actions */}
           <div className="bg-white rounded-lg shadow-sm border">
             <div className="p-6 border-b">
               <h3 className="text-lg font-semibold text-slate-900">Quick Actions</h3>
@@ -380,7 +509,6 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
         </div>
       </div>
     </div>

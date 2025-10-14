@@ -58,16 +58,40 @@ class EnhancedAuthService {
   }
 
   private getApiBaseUrl(): string {
-    // Priority order for API URL resolution
+    // Priority order for API URL resolution with better production handling
+    const isProduction = process.env.NODE_ENV === 'production';
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    
+    console.log('🔗 Environment Detection:', { 
+      NODE_ENV: process.env.NODE_ENV,
+      isProduction,
+      NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL 
+    });
+
+    if (isProduction) {
+      // Production environment - use Railway backend
+      const productionUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://rejlers-backend-production.up.railway.app/api/v1';
+      console.log('🏭 Using production URL:', productionUrl);
+      return productionUrl;
+    } else if (isDevelopment) {
+      // Development environment - prefer localhost if available
+      const devUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api/v1';
+      console.log('🛠️ Using development URL:', devUrl);
+      return devUrl;
+    }
+
+    // Fallback URLs
     const urls = [
       process.env.NEXT_PUBLIC_API_BASE_URL,
       'https://rejlers-backend-production.up.railway.app/api/v1',
       'https://rejlers-backend.railway.app/api/v1',
       config.api?.baseUrl,
-      'http://localhost:8000/api/v1' // Fallback for development
+      'http://localhost:8000/api/v1'
     ].filter(Boolean);
 
-    return urls[0] || 'https://rejlers-backend-production.up.railway.app/api/v1';
+    const selectedUrl = urls[0] || 'https://rejlers-backend-production.up.railway.app/api/v1';
+    console.log('🔄 Fallback URL selected:', selectedUrl);
+    return selectedUrl;
   }
 
   private async fetchWithTimeout(url: string, options: RequestInit, timeout: number = this.timeout): Promise<Response> {

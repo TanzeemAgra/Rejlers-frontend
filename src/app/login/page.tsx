@@ -99,8 +99,20 @@ const LoginPage: React.FC = () => {
           localStorage.removeItem('rememberMe');
         }
         
+        // All users redirect to the main dashboard
+        // The dashboard will adapt based on user role (super admin, staff, regular user)
+        const redirectPath = '/dashboard';
+        
+        console.log('🎯 Redirecting to dashboard for user:', {
+          email: loginResponse.email,
+          role: loginResponse.role,
+          is_superuser: loginResponse.is_superuser,
+          is_staff: loginResponse.is_staff,
+          path: redirectPath
+        });
+        
         // Use Next.js router for better navigation in production
-        router.push('/dashboard');
+        router.push(redirectPath);
         
       } else {
         setErrors({ email: 'Invalid response from server. Please try again.' });

@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "cross-env DISABLE_SOURCE_MAPS=true NEXT_TELEMETRY_DISABLED=1 next build",
+    "build:vercel": "npm install --legacy-peer-deps && cross-env DISABLE_SOURCE_MAPS=true NEXT_TELEMETRY_DISABLED=1 next build",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",

@@ -1,9 +1,17 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run build:vercel",
   "outputDirectory": ".next",
-  "installCommand": "npm install",
+  "installCommand": "npm install --legacy-peer-deps",
   "framework": "nextjs",
+  "regions": ["iad1"],
+  "build": {
+    "env": {
+      "NODE_ENV": "production",
+      "NEXT_TELEMETRY_DISABLED": "1",
+      "DISABLE_SOURCE_MAPS": "true"
+    }
+  },
   "functions": {
     "app/api/sitemap/route.ts": {
       "maxDuration": 10

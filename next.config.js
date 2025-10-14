@@ -9,6 +9,9 @@ const nextConfig = {
     ignoreBuildErrors: false, // Keep false to catch real TypeScript errors
   },
   
+  // Disable source maps in production to avoid Vercel deployment issues
+  productionBrowserSourceMaps: false,
+  
   // Enhanced Image Optimization for Better Performance
   images: {
     domains: ['localhost', 'api.oilgas.company.com', 'rejlers-frontend.vercel.app'],
@@ -29,19 +32,51 @@ const nextConfig = {
   },
 
   // Bundle Analyzer & Optimization
-  webpack: (config, { dev, isServer }) => {
-    // Fix data-uri-to-buffer and other Node.js modules in client-side
+  webpack: (config, { dev, isServer, webpack }) => {
+    // Disable source maps in production to prevent Vercel build issues
+    if (!dev) {
+      config.devtool = false;
+    }
+    
+    // Fix Node.js modules for client-side builds
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         fs: false,
+        net: false,
+        dns: false,
+        child_process: false,
+        tls: false,
         path: false,
         crypto: false,
         stream: false,
         util: false,
         buffer: false,
+        os: false,
+        url: false,
+        assert: false,
+        querystring: false,
+        http: false,
+        https: false,
+        zlib: false,
+        'data-uri-to-buffer': false,
       };
+
+      // Handle problematic packages
+      config.externals = config.externals || [];
+      config.externals.push({
+        'openai': 'commonjs openai',
+        'data-uri-to-buffer': 'commonjs data-uri-to-buffer',
+      });
     }
+    
+    // Add ignore plugin for source map warnings
+    config.plugins.push(
+      new webpack.IgnorePlugin({
+        resourceRegExp: /^\.\/locale$/,
+        contextRegExp: /moment$/,
+      })
+    );
     
     // Optimize bundle size in production
     if (!dev && !isServer) {
@@ -69,13 +104,6 @@ const nextConfig = {
         filename: 'static/fonts/[name][ext]',
       },
     });
-
-    // Handle externals for better tree shaking
-    if (!isServer) {
-      config.externals.push({
-        'data-uri-to-buffer': 'data-uri-to-buffer'
-      });
-    }
 
     return config;
   },

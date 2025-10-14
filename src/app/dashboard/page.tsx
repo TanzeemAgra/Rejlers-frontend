@@ -21,8 +21,9 @@ import {
 } from 'lucide-react';
 import { authService } from '@/lib/auth';
 import { businessModuleService, DashboardStats, RecentActivity } from '@/lib/businessModules';
-import DashboardSidebar from '@/components/ui/DashboardSidebar';
+import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import Logo from '@/components/ui/Logo';
+import MockAuthSetup from '@/components/dev/MockAuthSetup';
 
 const Dashboard: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -511,6 +512,9 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* Development Authentication Setup */}
+      {process.env.NODE_ENV === 'development' && <MockAuthSetup />}
     </div>
   );
 };

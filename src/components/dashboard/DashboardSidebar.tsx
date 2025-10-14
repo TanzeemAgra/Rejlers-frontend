@@ -18,16 +18,8 @@ import {
   DocumentTextIcon,
   CalendarIcon,
 } from '@heroicons/react/24/outline';
+import { getSidebarConfiguration, SidebarModule as ConfigSidebarModule, SidebarItem } from '@/config/sidebar';
 import { DASHBOARD_CONFIG } from '../../config/dashboard.config';
-
-interface SidebarModule {
-  id: string;
-  name: string;
-  icon: React.ComponentType<any>;
-  path: string;
-  subModules?: SidebarModule[];
-  aiEnabled?: boolean;
-}
 
 interface DashboardSidebarProps {
   isCollapsed: boolean;
@@ -45,73 +37,44 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
   const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
   const [aiInsights, setAiInsights] = useState<any[]>([]);
 
-  // Get modules from configuration
-  const modules: SidebarModule[] = [
-    {
-      id: 'dashboard',
-      name: 'Dashboard',
-      icon: HomeIcon,
-      path: '/dashboard',
-      aiEnabled: true,
-    },
-    {
-      id: 'analytics',
-      name: 'Analytics',
-      icon: ChartBarIcon,
-      path: '/dashboard/analytics',
-      aiEnabled: true,
-      subModules: [
-        { id: 'performance', name: 'Performance', icon: ChartBarIcon, path: '/dashboard/analytics/performance' },
-        { id: 'insights', name: 'AI Insights', icon: SparklesIcon, path: '/dashboard/analytics/insights' },
-      ],
-    },
-    {
-      id: 'contacts',
-      name: 'Contacts',
-      icon: UserGroupIcon,
-      path: '/dashboard/contacts',
-      aiEnabled: true,
-      subModules: [
-        { id: 'clients', name: 'Clients', icon: BuildingOfficeIcon, path: '/dashboard/contacts/clients' },
-        { id: 'leads', name: 'Leads', icon: PhoneIcon, path: '/dashboard/contacts/leads' },
-      ],
-    },
-    {
-      id: 'finance',
-      name: 'Finance',
-      icon: CurrencyDollarIcon,
-      path: '/dashboard/finance',
-      aiEnabled: true,
-      subModules: [
-        { id: 'invoicing', name: 'Invoicing', icon: DocumentTextIcon, path: '/dashboard/finance/invoicing' },
-        { id: 'expenses', name: 'Expenses', icon: CurrencyDollarIcon, path: '/dashboard/finance/expenses' },
-      ],
-    },
-    {
-      id: 'calendar',
-      name: 'Calendar',
-      icon: CalendarIcon,
-      path: '/dashboard/calendar',
-      aiEnabled: true,
-    },
-    {
-      id: 'notifications',
-      name: 'Notifications',
-      icon: BellIcon,
-      path: '/dashboard/notifications',
-      aiEnabled: true,
-    },
-    {
-      id: 'settings',
-      name: 'Settings',
-      icon: CogIcon,
-      path: '/dashboard/settings',
-      subModules: [
-        { id: 'profile', name: 'Profile', icon: UserGroupIcon, path: '/dashboard/settings/profile' },
-        { id: 'ai-config', name: 'AI Configuration', icon: SparklesIcon, path: '/dashboard/settings/ai' },
-      ],
-    },
-  ];
+  // Get user data from localStorage for permission checking
+  const getUserData = () => {
+    try {
+      const userData = localStorage.getItem('user');
+      return userData ? JSON.parse(userData) : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const userData = getUserData();
+
+  // Check if user has required permissions
+  const hasPermission = (requiredPermissions?: string[]) => {
+    if (!requiredPermissions || requiredPermissions.length === 0) return true;
+    if (!userData) return false;
+
+    return requiredPermissions.some(permission => {
+      switch (permission) {
+        case 'super_admin_access':
+          return userData.is_superuser === true;
+        case 'view_dashboard':
+          return true; // All authenticated users can view dashboard
+        case 'view_projects':
+          return userData.is_staff === true || userData.is_superuser === true;
+        default:
+          return false;
+      }
+    });
+  };
+
+  // Filter modules based on user permissions
+  const getFilteredModules = (): ConfigSidebarModule[] => {
+    return getSidebarConfiguration().filter(module => hasPermission(module.permissions));
+  };
+
+  // Get modules from configuration with permission filtering
+  const modules: ConfigSidebarModule[] = getFilteredModules();
 
   // Toggle module expansion
   const toggleModule = (moduleId: string) => {
@@ -165,11 +128,56 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
     return aiInsights.filter(insight => insight.moduleId === moduleId);
   };
 
+  // Render sidebar item
+  const renderSidebarItem = (item: SidebarItem, level: number = 0) => {
+    const isActive = currentModule === item.id;
+    
+    return (
+      <motion.div
+        key={item.id}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="mb-1"
+      >
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => onModuleChange(item.id)}
+          className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-left transition-colors ${
+            isActive
+              ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+          } ${level > 0 ? 'ml-4' : ''}`}
+        >
+          <div className="flex items-center space-x-3">
+            {item.icon && <item.icon className="w-5 h-5" />}
+            {!isCollapsed && (
+              <span className="font-medium">{item.title}</span>
+            )}
+          </div>
+          
+          {!isCollapsed && item.badge && (
+            <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+              item.badgeColor === 'purple' ? 'bg-purple-100 text-purple-700' :
+              item.badgeColor === 'green' ? 'bg-green-100 text-green-700' :
+              item.badgeColor === 'red' ? 'bg-red-100 text-red-700' :
+              item.badgeColor === 'yellow' ? 'bg-yellow-100 text-yellow-700' :
+              item.badgeColor === 'indigo' ? 'bg-indigo-100 text-indigo-700' :
+              'bg-blue-100 text-blue-700'
+            }`}>
+              {item.badge}
+            </span>
+          )}
+        </motion.button>
+      </motion.div>
+    );
+  };
+
   // Render module item
-  const renderModule = (module: SidebarModule, level: number = 0) => {
+  const renderModule = (module: ConfigSidebarModule, level: number = 0) => {
     const isExpanded = expandedModules.has(module.id);
     const isActive = currentModule === module.id;
-    const hasSubModules = module.subModules && module.subModules.length > 0;
+    const hasSubModules = module.children && module.children.length > 0;
     const moduleInsights = getModuleInsights(module.id);
     const hasInsights = moduleInsights.length > 0;
 
@@ -205,17 +213,26 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
                   exit={{ opacity: 0, width: 0 }}
                   className="flex items-center justify-between w-full"
                 >
-                  <span className="font-medium">{module.name}</span>
+                  <span className="font-medium">{module.title}</span>
                   
                   <div className="flex items-center space-x-2">
-                    {/* AI Enabled Badge */}
-                    {module.aiEnabled && (
-                      <SparklesIcon className="w-4 h-4 text-blue-500" />
-                    )}
-                    
                     {/* Insights Badge */}
                     {hasInsights && (
                       <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                    )}
+                    
+                    {/* Badge */}
+                    {module.badge && (
+                      <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                        module.badgeColor === 'purple' ? 'bg-purple-100 text-purple-700' :
+                        module.badgeColor === 'green' ? 'bg-green-100 text-green-700' :
+                        module.badgeColor === 'red' ? 'bg-red-100 text-red-700' :
+                        module.badgeColor === 'yellow' ? 'bg-yellow-100 text-yellow-700' :
+                        module.badgeColor === 'indigo' ? 'bg-indigo-100 text-indigo-700' :
+                        'bg-blue-100 text-blue-700'
+                      }`}>
+                        {module.badge}
+                      </span>
                     )}
                     
                     {/* Expand Icon */}
@@ -244,8 +261,8 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
               transition={{ duration: 0.3 }}
               className="overflow-hidden"
             >
-              {module.subModules!.map(subModule => 
-                renderModule(subModule, level + 1)
+              {module.children!.map(subModule => 
+                renderSidebarItem(subModule, level + 1)
               )}
             </motion.div>
           )}

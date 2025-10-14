@@ -23,6 +23,8 @@ import {
   Trash2,
   Eye,
   Filter,
+  Crown,
+  Lock,
   RefreshCw,
   LogOut,
   HelpCircle
@@ -62,6 +64,84 @@ export const getSidebarConfiguration = (): SidebarModule[] => {
       path: '/dashboard',
       isActive: true,
       permissions: ['view_dashboard']
+    },
+    {
+      id: 'super-admin',
+      title: 'Super Admin Control',
+      icon: Shield,
+      badge: 'ADMIN',
+      badgeColor: 'purple',
+      isActive: true,
+      permissions: ['super_admin_access'],
+      children: [
+        {
+          id: 'admin-dashboard',
+          title: 'Admin Dashboard',
+          icon: Crown,
+          path: '/dashboard/super-admin',
+          description: 'Super Admin control panel with system overview'
+        },
+        {
+          id: 'user-management',
+          title: 'User Management',
+          icon: Users,
+          path: '/dashboard/super-admin/user-management',
+          description: 'Create, edit, and manage all system users'
+        },
+        {
+          id: 'role-management',
+          title: 'Role & Permissions',
+          icon: Shield,
+          path: '/dashboard/super-admin/role-permissions',
+          description: 'Manage user roles and permissions'
+        },
+        {
+          id: 'system-settings',
+          title: 'System Settings',
+          icon: Settings,
+          path: '/dashboard/super-admin/system-settings',
+          description: 'Configure global system settings'
+        },
+        {
+          id: 'audit-logs',
+          title: 'Audit Logs',
+          icon: FileText,
+          path: '/dashboard/super-admin/audit-logs',
+          description: 'View system activity and audit logs'
+        },
+        {
+          id: 'database-management',
+          title: 'Database Management',
+          icon: Database,
+          path: '/dashboard/super-admin/database-management',
+          description: 'Database operations and maintenance'
+        },
+        {
+          id: 'system-monitoring',
+          title: 'System Monitoring',
+          icon: BarChart3,
+          path: '/dashboard/super-admin/system-monitoring',
+          badge: 'LIVE',
+          badgeColor: 'green',
+          description: 'Real-time system monitoring and analytics'
+        },
+        {
+          id: 'backup-restore',
+          title: 'Backup & Restore',
+          icon: Download,
+          path: '/dashboard/super-admin/backup-restore',
+          description: 'System backup and restore operations'
+        },
+        {
+          id: 'security-center',
+          title: 'Security Center',
+          icon: Lock,
+          path: '/dashboard/super-admin/security-center',
+          badge: '3',
+          badgeColor: 'red',
+          description: 'Security alerts and threat monitoring'
+        }
+      ]
     },
     {
       id: 'projects',

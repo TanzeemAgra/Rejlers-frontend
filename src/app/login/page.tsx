@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, User, Lock, Mail, ArrowRight, Shield, Building2 } from 'lucide-react';
 import Link from 'next/link';
 import Header from '@/components/ui/Header';
+import { authService } from '@/lib/auth';
 
 const LoginPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -63,18 +64,33 @@ const LoginPage: React.FC = () => {
     setIsLoading(true);
     
     try {
-      // Simulate API call - replace with actual Django backend call later
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Use AuthService to login with Django backend
+      const loginResponse = await authService.login({
+        email: formData.email,
+        password: formData.password
+      });
       
-      // TODO: Replace with actual authentication logic
-      console.log('Login attempt:', formData);
-      
-      // Redirect to dashboard or home page
-      window.location.href = '/';
+      if (loginResponse.access) {
+        console.log('Login successful');
+        
+        // Store remember me preference
+        if (formData.rememberMe) {
+          localStorage.setItem('rememberMe', 'true');
+        } else {
+          localStorage.removeItem('rememberMe');
+        }
+        
+        // Redirect to dashboard
+        window.location.href = '/dashboard';
+      } else {
+        setErrors({ email: 'Invalid credentials. Please check your email and password.' });
+      }
       
     } catch (error) {
       console.error('Login error:', error);
-      setErrors({ email: 'Invalid credentials. Please try again.' });
+      setErrors({ 
+        email: error instanceof Error ? error.message : 'An error occurred during login. Please try again.' 
+      });
     } finally {
       setIsLoading(false);
     }

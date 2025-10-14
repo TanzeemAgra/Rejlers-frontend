@@ -36,8 +36,11 @@ export interface User {
   last_name: string;
   is_superuser: boolean;
   is_staff: boolean;
+  role?: string;
   company_name?: string;
   job_title?: string;
+  full_name?: string;
+  accessible_modules?: string[];
 }
 
 class AuthService {

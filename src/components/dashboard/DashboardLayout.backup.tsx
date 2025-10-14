@@ -50,37 +50,9 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [currentModule, setCurrentModule] = useState('dashboard');
 
   // Custom Hooks
-  const { user, logout, isAuthenticated, isLoading } = useAuth();
+  const { user, logout } = useAuth();
   const { aiInsights, generateInsight, isProcessing } = useAI();
   const { metrics, isConnected, connectionStatus } = useRealTime();
-
-  // Handle loading state
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <span className="ml-3 text-gray-600">Loading...</span>
-      </div>
-    );
-  }
-
-  // Handle unauthenticated state
-  if (!isAuthenticated) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Authentication Required</h1>
-          <p className="text-gray-600 mb-6">Please log in to access the dashboard.</p>
-          <a 
-            href="/login" 
-            className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Go to Login
-          </a>
-        </div>
-      </div>
-    );
-  }
 
   // AI-Powered Smart Search
   const handleSmartSearch = useCallback(async (query: string) => {

@@ -7,6 +7,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import Logo from '@/components/ui/Logo';
 import { 
   Bars3Icon, 
   XMarkIcon,
@@ -201,8 +202,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
                 {/* Company Branding */}
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">R</span>
+                  <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm border p-1">
+                    <Logo context="sidebar" />
                   </div>
                   <div className="hidden sm:block">
                     <h1 className="text-xl font-bold text-slate-900 dark:text-white">

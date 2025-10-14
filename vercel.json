@@ -7,6 +7,9 @@
   "functions": {
     "app/api/sitemap/route.ts": {
       "maxDuration": 10
+    },
+    "app/**/*.tsx": {
+      "maxDuration": 30
     }
   },
   "headers": [
@@ -16,6 +19,18 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=0, must-revalidate"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",  
+          "value": "DENY"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
         }
       ]
     },

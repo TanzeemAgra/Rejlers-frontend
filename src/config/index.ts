@@ -4,17 +4,25 @@ import type { AppConfig } from '@/types';
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
 
-// API Configuration with Railway backend support
+// API Configuration with Railway backend support and fallbacks
 const getApiBaseUrl = () => {
+  // Priority order for API URL resolution
   if (process.env.NEXT_PUBLIC_API_BASE_URL) {
+    console.log('📡 Using API URL from environment:', process.env.NEXT_PUBLIC_API_BASE_URL);
     return process.env.NEXT_PUBLIC_API_BASE_URL;
   }
   
-  // Fallback based on environment
+  // Fallback URLs based on environment
   if (isProduction) {
-    return 'https://rejlers-backend-production.up.railway.app/api/v1';
+    const productionUrls = [
+      'https://rejlers-backend-production.up.railway.app/api/v1',
+      'https://rejlers-backend.railway.app/api/v1',
+    ];
+    console.log('🏭 Production environment - using Railway backend:', productionUrls[0]);
+    return productionUrls[0];
   }
   
+  console.log('🛠️ Development environment - using localhost');
   return 'http://localhost:8000/api/v1';
 };
 

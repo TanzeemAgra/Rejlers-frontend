@@ -1,10 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, User, Lock, Mail, ArrowRight, Shield, Building2 } from 'lucide-react';
+import { Eye, EyeOff, User, Lock, Mail, ArrowRight, Shield, Building2, Bug, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Header from '@/components/ui/Header';
 import { authService } from '@/lib/auth';
+import { enhancedAuthService } from '@/lib/enhancedAuth';
+import Logo from '@/components/ui/Logo';
+import LoginDebugger from '@/components/ui/LoginDebugger';
 
 const LoginPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -16,10 +20,19 @@ const LoginPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{email?: string; password?: string}>({});
   const [mounted, setMounted] = useState(false);
+  const [showDebugger, setShowDebugger] = useState(false);
+  const [isProduction, setIsProduction] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    setIsProduction(process.env.NODE_ENV === 'production');
+    
+    // Check if user is already authenticated
+    if (enhancedAuthService.isAuthenticated()) {
+      router.push('/dashboard');
+    }
+  }, [router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -62,19 +75,21 @@ const LoginPage: React.FC = () => {
     if (!validateForm()) return;
     
     setIsLoading(true);
+    setErrors({});
     
     try {
-      // Use AuthService to login with Django backend
-      const loginResponse = await authService.login({
+      // Use Enhanced AuthService for better error handling and production support
+      const loginResponse = await enhancedAuthService.login({
         email: formData.email,
         password: formData.password
       });
       
       if (loginResponse.access) {
-        console.log('Login successful', {
+        console.log('✅ Login successful', {
           user: loginResponse.email,
           role: loginResponse.role,
-          isAdmin: loginResponse.is_superuser || loginResponse.is_staff
+          isAdmin: loginResponse.is_superuser || loginResponse.is_staff,
+          environment: process.env.NODE_ENV
         });
         
         // Store remember me preference
@@ -84,22 +99,35 @@ const LoginPage: React.FC = () => {
           localStorage.removeItem('rememberMe');
         }
         
-        // Redirect based on user role
-        if (loginResponse.is_superuser || loginResponse.is_staff) {
-          window.location.href = '/dashboard';
-        } else {
-          // Regular user - redirect to appropriate page
-          window.location.href = '/dashboard';
-        }
+        // Use Next.js router for better navigation in production
+        router.push('/dashboard');
+        
       } else {
-        setErrors({ email: 'Invalid credentials. Please check your email and password.' });
+        setErrors({ email: 'Invalid response from server. Please try again.' });
       }
       
     } catch (error) {
-      console.error('Login error:', error);
-      setErrors({ 
-        email: error instanceof Error ? error.message : 'An error occurred during login. Please try again.' 
-      });
+      console.error('❌ Login error:', error);
+      
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred during login.';
+      
+      // Show more helpful errors in production
+      if (errorMessage.includes('Network error') || errorMessage.includes('timeout')) {
+        setErrors({ 
+          email: 'Connection problem. Please check your internet connection and try again.',
+          password: 'If the problem persists, the server may be temporarily unavailable.'
+        });
+      } else if (errorMessage.includes('Invalid email or password')) {
+        setErrors({ email: 'Invalid email or password. Please check your credentials.' });
+      } else if (errorMessage.includes('CORS') || errorMessage.includes('fetch')) {
+        setErrors({ 
+          email: 'Unable to connect to the server. Please try again or contact support.',
+          password: 'This may be a temporary connectivity issue.'
+        });
+      } else {
+        setErrors({ email: errorMessage });
+      }
+      
     } finally {
       setIsLoading(false);
     }
@@ -131,10 +159,9 @@ const LoginPage: React.FC = () => {
           {/* Logo */}
           <div className="mb-8">
             <Link href="/" className="inline-flex items-center space-x-3">
-              <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center">
-                <Building2 className="w-7 h-7 text-white" />
+              <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center p-2">
+                <Logo context="login" priority={true} />
               </div>
-              <span className="text-2xl font-bold">REJLERS</span>
             </Link>
           </div>
 
@@ -328,6 +355,42 @@ const LoginPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Production Debug Tools */}
+      {isProduction && (
+        <div className="fixed bottom-4 right-4 z-40">
+          <button
+            onClick={() => setShowDebugger(true)}
+            className="flex items-center space-x-2 bg-red-600 text-white px-3 py-2 rounded-lg shadow-lg hover:bg-red-700 transition-colors text-sm"
+            title="Open login diagnostics"
+          >
+            <Bug className="w-4 h-4" />
+            <span>Debug Login</span>
+          </button>
+        </div>
+      )}
+
+      {/* Global Error Banner */}
+      {(errors.email || errors.password) && (
+        <div className="fixed top-4 left-4 right-4 bg-red-50 border border-red-200 rounded-lg p-4 shadow-lg z-50 mx-auto max-w-md">
+          <div className="flex items-start space-x-3">
+            <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+            <div>
+              <h4 className="text-sm font-medium text-red-900 mb-1">Login Failed</h4>
+              <div className="text-sm text-red-700 space-y-1">
+                {errors.email && <p>{errors.email}</p>}
+                {errors.password && <p>{errors.password}</p>}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Login Debugger */}
+      <LoginDebugger 
+        isVisible={showDebugger} 
+        onClose={() => setShowDebugger(false)} 
+      />
 
       {/* Mobile-specific optimizations */}
       <style jsx global>{`

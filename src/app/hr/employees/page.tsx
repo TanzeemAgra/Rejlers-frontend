@@ -1,10 +1,17 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import DashboardSidebar from '@/components/ui/DashboardSidebar';
 import { Users, Plus, Building2, Calendar, Mail, Phone } from 'lucide-react';
 
 const EmployeesPage = () => {
+  const router = useRouter();
+
+  const handleAttendanceClick = () => {
+    router.push('/hr/attendance');
+  };
+
   const employees = [
     { 
       id: 1, 
@@ -77,10 +84,19 @@ const EmployeesPage = () => {
               </div>
             </div>
             
-            <button className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center space-x-2">
-              <Plus className="w-4 h-4" />
-              <span>Add Employee</span>
-            </button>
+            <div className="flex items-center space-x-3">
+              <button 
+                onClick={handleAttendanceClick}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center space-x-2 transition-colors"
+              >
+                <Calendar className="w-4 h-4" />
+                <span>Attendance</span>
+              </button>
+              <button className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center space-x-2">
+                <Plus className="w-4 h-4" />
+                <span>Add Employee</span>
+              </button>
+            </div>
           </div>
         </header>
 

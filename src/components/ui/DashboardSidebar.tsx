@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight, Search, Menu, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { getSidebarConfiguration, SidebarModule, SidebarItem, searchModules } from '@/config/sidebar';
+import Logo from '@/components/ui/Logo';
 
 interface DashboardSidebarProps {
   isOpen?: boolean;
@@ -181,10 +182,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({
       <div className="p-4 border-b border-slate-200">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">R</span>
-            </div>
-            <span className="font-bold text-slate-900">REJLERS</span>
+            <Logo context="sidebar" />
           </div>
           
           {/* Mobile close button */}

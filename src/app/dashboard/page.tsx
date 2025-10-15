@@ -125,14 +125,16 @@ const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 flex">
       {/* Sidebar */}
-        <BulletproofSidebar 
-          isOpen={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
-        />      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      <BulletproofSidebar 
+        isOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
+      
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-h-screen lg:ml-80">
         {/* Header */}
-        <header className="bg-white shadow-sm border-b">
-          <div className="px-6 py-4 flex items-center justify-between">
+        <header className="bg-white shadow-sm border-b sticky top-0 z-30">
+          <div className="px-4 lg:px-6 py-4 flex items-center justify-between">
             <div className="flex items-center space-x-4">
               {/* Mobile menu button */}
               <button
@@ -153,14 +155,14 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
             
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 lg:space-x-4">
               <button className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg">
-                <Bell className="w-5 h-5" />
+                <Bell className="w-4 lg:w-5 h-4 lg:h-5" />
               </button>
               <button className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg">
-                <Settings className="w-5 h-5" />
+                <Settings className="w-4 lg:w-5 h-4 lg:h-5" />
               </button>
-              <div className="flex items-center space-x-2 px-3 py-2 bg-slate-100 rounded-lg">
+              <div className="hidden sm:flex items-center space-x-2 px-3 py-2 bg-slate-100 rounded-lg">
                 <User className="w-4 h-4 text-slate-600" />
                 <span className="text-sm font-medium text-slate-900">
                   {user?.username || user?.email || 'User'}
@@ -168,7 +170,7 @@ const Dashboard: React.FC = () => {
               </div>
               <button
                 onClick={handleLogout}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm font-medium"
+                className="bg-red-600 text-white px-3 lg:px-4 py-2 rounded-lg hover:bg-red-700 text-xs lg:text-sm font-medium"
               >
                 Logout
               </button>
@@ -177,15 +179,15 @@ const Dashboard: React.FC = () => {
         </header>
 
         {/* Main Dashboard Content */}
-        <div className="flex-1 p-6 overflow-auto">
+        <div className="flex-1 p-4 lg:p-6 overflow-auto bg-slate-50">
           {/* Welcome Section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900 mb-2">
+        <div className="mb-6 lg:mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div className="flex-1">
+              <h2 className="text-xl lg:text-2xl font-bold text-slate-900 mb-2">
                 Welcome back, {user?.first_name || user?.username || 'User'}!
               </h2>
-              <p className="text-slate-600">
+              <p className="text-sm lg:text-base text-slate-600">
                 {user?.is_superuser 
                   ? "System Administrator - You have full access to all system features and controls."
                   : user?.is_staff
@@ -195,9 +197,9 @@ const Dashboard: React.FC = () => {
               </p>
             </div>
             {(user?.is_superuser || user?.is_staff) && (
-              <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg border border-purple-200">
-                <Shield className="w-5 h-5 text-purple-600" />
-                <span className="text-sm font-medium text-purple-700">
+              <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg border border-purple-200 self-start lg:self-auto">
+                <Shield className="w-4 lg:w-5 h-4 lg:h-5 text-purple-600" />
+                <span className="text-xs lg:text-sm font-medium text-purple-700">
                   {user?.is_superuser ? 'Super Admin' : 'Administrator'}
                 </span>
               </div>
@@ -206,7 +208,7 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
           {/* Projects Stats */}
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <div className="flex items-center justify-between mb-4">

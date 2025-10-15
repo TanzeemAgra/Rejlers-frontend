@@ -226,7 +226,7 @@ const BulletproofSidebar: React.FC<DashboardSidebarProps> = ({ isOpen, onClose }
   ];
 
   const sidebarContent = (
-    <div className="w-80 bg-white border-r border-gray-200 h-full overflow-y-auto">
+    <div className="w-80 bg-white border-r border-gray-200 h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
       <div className="p-6">
         <h1 className="text-xl font-bold text-gray-900">REJLERS</h1>
         <p className="text-sm text-gray-500">Dashboard</p>
@@ -300,14 +300,14 @@ const BulletproofSidebar: React.FC<DashboardSidebarProps> = ({ isOpen, onClose }
       {/* Mobile overlay when open */}
       {isOpen && (
         <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50" onClick={onClose}>
-          <div className="w-80 h-full" onClick={(e) => e.stopPropagation()}>
+          <div className="w-80 h-full shadow-2xl" onClick={(e) => e.stopPropagation()}>
             {sidebarContent}
           </div>
         </div>
       )}
       
-      {/* Desktop sidebar - always visible */}
-      <div className="hidden lg:block">
+      {/* Desktop sidebar - always visible with fixed positioning */}
+      <div className="hidden lg:block lg:fixed lg:inset-y-0 lg:left-0 lg:z-40">
         {sidebarContent}
       </div>
     </>

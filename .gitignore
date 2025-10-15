@@ -28,6 +28,11 @@ ai_config.*
 # .env.example should remain in repository
 !.env.example
 
+# Vercel secrets and setup files
+vercel-secrets.txt
+*.secrets
+.vercel/
+
 # ========================================
 # Next.js Build & Runtime Files
 # ========================================

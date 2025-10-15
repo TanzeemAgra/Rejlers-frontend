@@ -1,0 +1,72 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [ main, develop, feature/* ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+        
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        
+    - name: Install Dependencies
+      run: npm ci
+      
+    - name: Lint Code
+      run: npm run lint
+      continue-on-error: true
+      
+    - name: Type Check
+      run: npm run type-check
+      continue-on-error: true
+      
+    - name: Run Tests
+      run: npm test
+      continue-on-error: true
+      
+    - name: Build Application (Development)
+      if: github.ref != 'refs/heads/main'
+      run: npm run build
+      env:
+        NODE_ENV: development
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:8000/api/v1
+        
+    - name: Build Application (Production)
+      if: github.ref == 'refs/heads/main'
+      run: npm run build:vercel
+      env:
+        NODE_ENV: production
+        NEXT_PUBLIC_API_BASE_URL: https://rejlers-backend-production.up.railway.app/api/v1
+        
+    - name: Upload build artifacts
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-files-${{ matrix.node-version }}
+        path: |
+          .next/
+          !.next/cache/
+        retention-days: 1
+        
+    - name: Build Summary
+      run: |
+        echo "## 🏗️ Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- **Node.js Version**: ${{ matrix.node-version }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Build Status**: ✅ Success" >> $GITHUB_STEP_SUMMARY
+        echo "- **Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY

@@ -67,5 +67,10 @@
       "source": "/(.*)",
       "destination": "/"
     }
-  ]
+  ],
+  "github": {
+    "enabled": true,
+    "autoAlias": true,
+    "silent": false
+  }
 }

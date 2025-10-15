@@ -7,7 +7,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Menu, Bell, Settings, LogOut, ChevronRight, ChevronDown } from 'lucide-react';
+import { Menu, Bell, Settings, LogOut } from 'lucide-react';
 import { authService } from '@/lib/auth';
 import { businessModuleService } from '@/lib/businessModules';
 import { 
@@ -19,6 +19,7 @@ import {
   type DashboardWidget 
 } from '@/config/dashboardConfig';
 import Logo from '@/components/ui/Logo';
+import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 
 const SoftCodedDashboard: React.FC = () => {
   // State Management
@@ -27,7 +28,6 @@ const SoftCodedDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
   const [widgetData, setWidgetData] = useState<Record<string, any>>({});
 
   // Environment and Theme
@@ -143,72 +143,9 @@ const SoftCodedDashboard: React.FC = () => {
     };
   };
 
-  // Toggle module expansion
-  const toggleModule = (moduleId: string) => {
-    const newExpanded = new Set(expandedModules);
-    if (newExpanded.has(moduleId)) {
-      newExpanded.delete(moduleId);
-    } else {
-      newExpanded.add(moduleId);
-    }
-    setExpandedModules(newExpanded);
-  };
 
-  // Render Module Item
-  const renderModuleItem = (module: DashboardModule, isChild = false) => (
-    <motion.div
-      key={module.id}
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.2 }}
-      className={isChild ? 'ml-4' : ''}
-    >
-      {module.hasSubmenu && !isChild ? (
-        <button
-          onClick={() => toggleModule(module.id)}
-          className="flex items-center w-full px-4 py-3 text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-all duration-200 rounded-lg group"
-        >
-          <module.icon className="w-5 h-5 mr-3 text-slate-500 group-hover:text-slate-700" />
-          <span className="flex-1 font-medium text-left">{module.name}</span>
-          {module.badge && (
-            <span className={`px-2 py-1 text-xs font-semibold rounded-full mr-2 ${module.badgeColor}`}>
-              {module.badge}
-            </span>
-          )}
-          {expandedModules.has(module.id) ? (
-            <ChevronDown size={16} className="text-slate-400" />
-          ) : (
-            <ChevronRight size={16} className="text-slate-400" />
-          )}
-        </button>
-      ) : (
-        <a
-          href={module.path}
-          className="flex items-center w-full px-4 py-3 text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-all duration-200 rounded-lg group"
-        >
-          <module.icon className="w-5 h-5 mr-3 text-slate-500 group-hover:text-slate-700" />
-          <span className="flex-1 font-medium text-left">{module.name}</span>
-          {module.badge && (
-            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${module.badgeColor}`}>
-              {module.badge}
-            </span>
-          )}
-        </a>
-      )}
 
-      {/* Render children if expanded */}
-      {module.hasSubmenu && expandedModules.has(module.id) && module.children && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          transition={{ duration: 0.3 }}
-          className="ml-4 mt-1 space-y-1"
-        >
-          {module.children.map(child => renderModuleItem(child, true))}
-        </motion.div>
-      )}
-    </motion.div>
-  );
+
 
   // Render Widget
   const renderWidget = (widget: DashboardWidget) => {
@@ -291,40 +228,10 @@ const SoftCodedDashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 flex">
       {/* Sidebar */}
-      {config.layout.showSidebar && (
-        <motion.aside
-          initial={{ x: -320 }}
-          animate={{ x: sidebarOpen ? 0 : -320 }}
-          transition={{ duration: 0.3 }}
-          className={`fixed lg:relative lg:translate-x-0 z-30 bg-white border-r border-slate-200 h-full ${config.layout.sidebarWidth ? `w-[${config.layout.sidebarWidth}]` : 'w-80'}`}
-        >
-          {/* Sidebar Header */}
-          <div className="p-6 border-b border-slate-200">
-            <div className="flex items-center space-x-3">
-              <Logo context="dashboard" priority={true} />
-              <div>
-                <h1 className="text-xl font-bold text-slate-900">{config.branding.companyName}</h1>
-                <p className="text-sm text-slate-500">{config.branding.tagline}</p>
-              </div>
-            </div>
-            
-            {/* Debug Info */}
-            {config.features.enableDebugMode && (
-              <div className="mt-3 p-2 bg-blue-50 rounded-lg text-xs">
-                <div className="text-blue-800 font-semibold">Soft-Coded Dashboard Active</div>
-                <div className="text-blue-600">
-                  Env: {typeof environment === 'object' ? environment.environment : environment} | Modules: {config.modules.length} | Widgets: {config.widgets.length}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Navigation */}
-          <nav className="p-4 space-y-2 overflow-y-auto h-[calc(100vh-140px)]">
-            {config.modules.map(module => renderModuleItem(module))}
-          </nav>
-        </motion.aside>
-      )}
+      <DashboardSidebar 
+        isOpen={sidebarOpen} 
+        onClose={() => setSidebarOpen(false)} 
+      />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen">

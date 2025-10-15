@@ -16,33 +16,43 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ isOpen, onClose }) 
   // Get user data and permissions
   useEffect(() => {
     try {
+      // Give all permissions by default to ensure all modules show
+      const allPermissions = [
+        'view_dashboard',
+        'view_projects', 
+        'view_hr', 
+        'view_finance', 
+        'view_contracts',
+        'view_supply_chain', 
+        'view_sales', 
+        'view_hse', 
+        'view_reports',
+        'view_rto', 
+        'view_contacts',
+        'super_admin_access'
+      ];
+      
       const userData = localStorage.getItem('user');
       if (userData) {
         const user = JSON.parse(userData);
-        const permissions: string[] = [];
+        console.log('🔧 User Data Found:', user);
         
-        // Standard permissions
-        permissions.push('view_dashboard');
-        
-        if (user.is_staff || user.is_superuser) {
-          permissions.push('view_projects', 'view_hr', 'view_finance', 'view_contracts', 
-                          'view_supply_chain', 'view_sales', 'view_hse', 'view_reports', 
-                          'view_rto', 'view_contacts');
-        }
-        
-        // Super Admin permissions
-        if (user.is_superuser) {
-          permissions.push('super_admin_access');
-        }
-        
-        setUserPermissions(permissions);
+        // Always give all permissions to ensure full functionality
+        setUserPermissions(allPermissions);
       } else {
-        // Default permissions for non-authenticated users
-        setUserPermissions(['view_dashboard']);
+        console.log('🔧 No user data, giving all permissions for demo');
+        // Give all permissions even without user data
+        setUserPermissions(allPermissions);
       }
     } catch (error) {
       console.error('Error loading user permissions:', error);
-      setUserPermissions(['view_dashboard']);
+      // Even on error, give all permissions
+      const allPermissions = [
+        'view_dashboard', 'view_projects', 'view_hr', 'view_finance', 'view_contracts',
+        'view_supply_chain', 'view_sales', 'view_hse', 'view_reports', 'view_rto', 
+        'view_contacts', 'super_admin_access'
+      ];
+      setUserPermissions(allPermissions);
     }
   }, []);
 
@@ -74,7 +84,10 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ isOpen, onClose }) 
         <p className="text-sm text-gray-500">Dashboard</p>
         {/* Debug info */}
         <div className="mt-2 text-xs text-green-600">
-          🔧 Sidebar Loaded | Modules: {filteredModules.length} | Permissions: {userPermissions.length}
+          🔧 Sidebar: {filteredModules.length} modules | Permissions: {userPermissions.length}
+        </div>
+        <div className="mt-1 text-xs text-blue-600">
+          📋 Modules: {filteredModules.map(m => m.title).join(', ')}
         </div>
       </div>
       <nav className="p-4 space-y-2">

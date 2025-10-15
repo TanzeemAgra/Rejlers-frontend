@@ -111,13 +111,19 @@ export const getDashboardConfig = (user?: any): DashboardConfig => {
   const env = getEnvironmentType();
   const userPermissions = getUserPermissions(user);
   
+  // Safe environment property access
+  const isEnvObject = typeof env === 'object';
+  const isDevelopment = isEnvObject ? env.isDevelopment : false;
+  const isProduction = isEnvObject ? env.isProduction : true;
+  const hostname = isEnvObject ? env.hostname : 'server';
+  
   return {
     layout: {
       sidebarWidth: '320px',
       headerHeight: '80px',
       contentPadding: '24px',
       showSidebar: true,
-      sidebarCollapsible: env.isDevelopment
+      sidebarCollapsible: isDevelopment
     },
     
     branding: {
@@ -127,14 +133,14 @@ export const getDashboardConfig = (user?: any): DashboardConfig => {
     },
     
     features: {
-      enableDebugMode: env.isDevelopment || env.hostname.includes('vercel.app'),
+      enableDebugMode: isDevelopment || hostname.includes('vercel.app'),
       showEnvironmentInfo: true,
-      enableRealTimeUpdates: env.isProduction,
+      enableRealTimeUpdates: isProduction,
       enableNotifications: userPermissions.includes('admin')
     },
     
     modules: getModulesConfig(userPermissions),
-    widgets: getWidgetsConfig(userPermissions, env)
+    widgets: getWidgetsConfig(userPermissions, isEnvObject ? env : { environment: 'production', hostname: 'server' })
   };
 };
 

@@ -55,11 +55,23 @@ const Dashboard: React.FC = () => {
           setUser(userInfo);
         }
 
+        // Debug logging for production vs development differences
+        console.log('🔍 Dashboard Debug Info:');
+        console.log('  Environment:', process.env.NODE_ENV);
+        console.log('  User Data:', userInfo || 'No stored user data');
+        console.log('  Is Superuser:', userInfo?.is_superuser);
+        console.log('  Is Staff:', userInfo?.is_staff);
+        console.log('  API Base URL:', businessModuleService.getBaseUrl());
+
         // Fetch dashboard data
         const [dashboardStats, recentActivities] = await Promise.all([
           businessModuleService.getDashboardStats(),
           businessModuleService.getRecentActivities(),
         ]);
+
+        console.log('📊 Dashboard Data:');
+        console.log('  Stats:', dashboardStats);
+        console.log('  Activities:', recentActivities);
 
         setStats(dashboardStats);
         setActivities(recentActivities);
@@ -510,6 +522,19 @@ const Dashboard: React.FC = () => {
       
       {/* Development Authentication Setup */}
       {process.env.NODE_ENV === 'development' && <MockAuthSetup />}
+      
+      {/* Production Debug Info */}
+      {process.env.NODE_ENV === 'production' && user && (
+        <div className="fixed bottom-4 right-4 bg-purple-100 border border-purple-300 rounded-lg p-3 text-sm max-w-xs">
+          <div className="text-purple-800 font-medium">Production Mode</div>
+          <div className="text-purple-600 text-xs mt-1">
+            User: {user.username || user.email}
+          </div>
+          <div className="text-purple-600 text-xs">
+            Role: {user.is_superuser ? 'Super Admin' : user.is_staff ? 'Staff' : 'User'}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

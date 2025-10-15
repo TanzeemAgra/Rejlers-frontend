@@ -65,6 +65,11 @@ class BusinessModuleService {
     this.baseUrl = getBusinessModuleBaseUrl();
   }
 
+  // Get base URL for debugging
+  getBaseUrl(): string {
+    return this.baseUrl;
+  }
+
   // Make authenticated API calls
   private async apiCall(endpoint: string): Promise<any> {
     const headers = {

@@ -62,6 +62,8 @@ const Dashboard: React.FC = () => {
         console.log('  Is Superuser:', userInfo?.is_superuser);
         console.log('  Is Staff:', userInfo?.is_staff);
         console.log('  API Base URL:', businessModuleService.getBaseUrl());
+        console.log('  Current URL:', window.location.href);
+        console.log('  Dashboard Component Loading:', 'DASHBOARD PAGE COMPONENT');
 
         // Fetch dashboard data
         const [dashboardStats, recentActivities] = await Promise.all([
@@ -177,6 +179,12 @@ const Dashboard: React.FC = () => {
 
         {/* Main Dashboard Content */}
         <div className="flex-1 p-6 overflow-auto">
+          {/* Debug Banner - Remove after testing */}
+          <div className="mb-4 bg-red-100 border border-red-300 rounded-lg p-3 text-center">
+            <div className="text-red-800 font-bold">🔧 DEBUG: MAIN DASHBOARD COMPONENT LOADED</div>
+            <div className="text-red-600 text-sm">Environment: {process.env.NODE_ENV} | User: {user?.username} | Role: {user?.is_superuser ? 'Super Admin' : user?.is_staff ? 'Staff' : 'User'}</div>
+          </div>
+          
           {/* Welcome Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between">

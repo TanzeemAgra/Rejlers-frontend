@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import DashboardSidebar from '@/components/ui/DashboardSidebar';
+import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import { Truck, Plus, Package, MapPin, Clock } from 'lucide-react';
 
 const SupplyChainPage = () => {

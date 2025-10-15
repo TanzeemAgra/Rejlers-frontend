@@ -15,11 +15,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-// Initialize OpenAI client with server-side configuration
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-  organization: process.env.OPENAI_ORGANIZATION,
-});
+// Lazy initialization function for OpenAI client
+function getOpenAIClient(): OpenAI {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OpenAI API key is not configured');
+  }
+  
+  return new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+    organization: process.env.OPENAI_ORGANIZATION,
+  });
+}
 
 /**
  * Request validation interface
@@ -123,6 +129,7 @@ export async function POST(request: NextRequest) {
       tokensRequested: validated!.maxTokens
     });
 
+    const openai = getOpenAIClient();
     const completion = await openai.chat.completions.create({
       model: validated!.model!,
       messages: [

@@ -1,8 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Ignore ESLint errors during build for deployment
+  // Environment variables for build optimization
+  env: {
+    DISABLE_SOURCE_MAPS: process.env.DISABLE_SOURCE_MAPS || 'true',
+    NEXT_TELEMETRY_DISABLED: process.env.NEXT_TELEMETRY_DISABLED || '1',
+    SKIP_LINT_CHECK: process.env.SKIP_LINT_CHECK || 'false',
+  },
+  
+  // Ignore ESLint errors during build for deployment (Vercel optimization)
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: process.env.SKIP_LINT_CHECK === 'true' || process.env.NODE_ENV === 'production',
   },
   // Ignore TypeScript errors during build for deployment
   typescript: {

@@ -10,6 +10,7 @@
       "NODE_ENV": "production",
       "NEXT_TELEMETRY_DISABLED": "1",
       "DISABLE_SOURCE_MAPS": "true",
+      "SKIP_LINT_CHECK": "true",
       "NEXT_PUBLIC_API_BASE_URL": "https://rejlers-backend-production.up.railway.app/api/v1",
       "NEXT_PUBLIC_WS_URL": "wss://rejlers-backend-production.up.railway.app/ws",
       "NEXT_PUBLIC_BACKEND_URL": "https://rejlers-backend-production.up.railway.app"

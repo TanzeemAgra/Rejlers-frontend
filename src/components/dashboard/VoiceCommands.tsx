@@ -15,13 +15,7 @@ import {
 import { DASHBOARD_CONFIG } from '../../config/dashboard.config';
 import { useAI } from '../../hooks/useAI';
 
-// Type declarations for Web Speech API
-declare global {
-  interface Window {
-    SpeechRecognition: typeof SpeechRecognition;
-    webkitSpeechRecognition: typeof SpeechRecognition;
-  }
-}
+// Type declarations for Web Speech API (extending existing types)
 
 interface SpeechRecognitionEvent extends Event {
   resultIndex: number;
@@ -62,7 +56,7 @@ const VoiceCommands: React.FC<VoiceCommandsProps> = ({
   const [volume, setVolume] = useState(0);
   const [error, setError] = useState<string>('');
 
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
   const synthRef = useRef<SpeechSynthesis | null>(null);
   const animationFrameRef = useRef<number>();
   const { generateResponse, isLoading } = useAI();
@@ -136,7 +130,7 @@ const VoiceCommands: React.FC<VoiceCommandsProps> = ({
   // Initialize speech recognition
   useEffect(() => {
     if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
-      const SpeechRecognition = window.webkitSpeechRecognition || window.SpeechRecognition;
+      const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
       recognitionRef.current = new SpeechRecognition();
       
       if (recognitionRef.current) {

@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { authService } from '@/lib/auth';
 import { enhancedAuthService } from '@/lib/enhancedAuth';
-import DashboardSidebar from '@/components/ui/DashboardSidebar';
+import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import Logo from '@/components/ui/Logo';
 
 // Types

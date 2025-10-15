@@ -17,7 +17,7 @@ import {
   CheckCircle,
   ChevronLeft
 } from 'lucide-react';
-import DashboardSidebar from '@/components/ui/DashboardSidebar';
+import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import ClockActions from '@/components/attendance/ClockActions';
 import AIInsightsCard from '@/components/attendance/AIInsightsCard';
 import AttendanceAnalytics from '@/components/attendance/AttendanceAnalytics';

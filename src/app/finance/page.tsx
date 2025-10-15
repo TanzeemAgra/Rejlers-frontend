@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import DashboardSidebar from '@/components/ui/DashboardSidebar';
+import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import { DollarSign, Plus, TrendingUp, CreditCard, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 const FinancePage = () => {

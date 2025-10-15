@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import DashboardSidebar from '@/components/ui/DashboardSidebar';
+import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import { Users, Plus, Phone, Mail, MapPin, Building2 } from 'lucide-react';
 
 const ContactsPage = () => {

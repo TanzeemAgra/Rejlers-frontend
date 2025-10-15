@@ -48,6 +48,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
   const [voiceActive, setVoiceActive] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [currentModule, setCurrentModule] = useState('dashboard');
 
   // Custom Hooks
@@ -176,10 +177,12 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
         
         {/* AI Insights Banner */}
         {aiInsights && aiInsights.length > 0 && (
-          {/* <AIInsightsBanner insights={aiInsights} /> */}
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
-            <p className="text-sm text-blue-800">AI Insights Banner placeholder</p>
-          </div>
+          <>
+            {/* <AIInsightsBanner insights={aiInsights} /> */}
+            <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
+              <p className="text-sm text-blue-800">AI Insights Banner placeholder</p>
+            </div>
+          </>
         )}
 
         {/* Header */}
@@ -262,8 +265,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 {DASHBOARD_CONFIG.FEATURES.VOICE_COMMANDS.ENABLED && (
                   <VoiceCommands
                     isActive={voiceActive}
-                    onToggle={setVoiceActive}
-                    onCommand={handleVoiceCommand}
+                    onToggle={() => setVoiceActive(!voiceActive)}
+                    onCommandExecuted={handleVoiceCommand}
                   />
                 )}
 
@@ -282,7 +285,20 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
                 </button>
 
                 {/* Smart Notifications */}
-                <SmartNotifications />
+                <button
+                  onClick={() => setNotificationsOpen(!notificationsOpen)}
+                  className="p-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-100 dark:hover:bg-slate-800 relative"
+                  title="Notifications"
+                >
+                  <BellIcon className="h-6 w-6" />
+                  {/* Notification Badge */}
+                  <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full"></span>
+                </button>
+                
+                <SmartNotifications
+                  isOpen={notificationsOpen}
+                  onClose={() => setNotificationsOpen(false)}
+                />
 
                 {/* Settings */}
                 <button
@@ -349,8 +365,7 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ children }) => {
 
               {/* Business Modules Grid */}
               <ModuleGrid 
-                onModuleSelect={setCurrentModule}
-                currentModule={currentModule}
+                onModuleClick={setCurrentModule}
               />
             </div>
           )}

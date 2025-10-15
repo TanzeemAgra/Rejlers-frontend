@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import DashboardSidebar from '@/components/ui/DashboardSidebar';
+import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import { Users, Calendar, Clock, Building2, TrendingUp, AlertTriangle, CheckCircle } from 'lucide-react';
 
 const HRDashboard = () => {

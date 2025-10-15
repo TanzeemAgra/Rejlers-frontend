@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import DashboardSidebar from '@/components/ui/DashboardSidebar';
+import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import { Building2, Plus, Calendar, Users, BarChart3 } from 'lucide-react';
 
 const ProjectsPage = () => {

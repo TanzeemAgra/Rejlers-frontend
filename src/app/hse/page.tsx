@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import DashboardSidebar from '@/components/ui/DashboardSidebar';
+import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
 import { Shield, Plus, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 
 const HSEPage = () => {

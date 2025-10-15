@@ -40,6 +40,22 @@ const nextConfig = {
 
   // Bundle Analyzer & Optimization
   webpack: (config, { dev, isServer, webpack }) => {
+    const path = require('path');
+    
+    // Add path aliases for Vercel compatibility
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': path.resolve(__dirname, 'src'),
+      '@/components': path.resolve(__dirname, 'src/components'),
+      '@/config': path.resolve(__dirname, 'src/config'),
+      '@/data': path.resolve(__dirname, 'src/data'),
+      '@/lib': path.resolve(__dirname, 'src/lib'),
+      '@/utils': path.resolve(__dirname, 'src/utils'),
+      '@/types': path.resolve(__dirname, 'src/types'),
+      '@/hooks': path.resolve(__dirname, 'src/hooks'),
+      '@/assets': path.resolve(__dirname, 'src/assets'),
+    };
+
     // Disable source maps in production to prevent Vercel build issues
     if (!dev) {
       config.devtool = false;

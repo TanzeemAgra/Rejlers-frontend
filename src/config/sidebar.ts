@@ -1062,8 +1062,9 @@ export const getSidebarConfiguration = (): SidebarModule[] => {
       badge: '234',
       badgeColor: 'blue',
       isActive: true,
+      hasSubmenu: true,
       permissions: ['view_contacts'],
-      children: [
+      items: [
         {
           id: 'contacts-list',
           title: 'All Contacts',
@@ -1125,7 +1126,7 @@ export const searchModules = (query: string): { module: SidebarModule; item?: Si
     }
     
     // Search in module items
-    module.children?.forEach(item => {
+    module.items?.forEach(item => {
       if (
         item.title.toLowerCase().includes(query.toLowerCase()) ||
         item.description?.toLowerCase().includes(query.toLowerCase())

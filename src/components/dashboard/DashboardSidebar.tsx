@@ -92,7 +92,15 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ isOpen, onClose }) 
                   <span className="flex-1 font-medium text-left">{module.title}</span>
                   {/* Badge */}
                   {module.badge && (
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full mr-2 ${module.badgeColor}`}>
+                    <span className={`px-2 py-1 text-xs font-semibold rounded-full mr-2 ${
+                      module.badgeColor === 'blue' ? 'bg-blue-100 text-blue-800' :
+                      module.badgeColor === 'green' ? 'bg-green-100 text-green-800' :
+                      module.badgeColor === 'red' ? 'bg-red-100 text-red-800' :
+                      module.badgeColor === 'yellow' ? 'bg-yellow-100 text-yellow-800' :
+                      module.badgeColor === 'purple' ? 'bg-purple-100 text-purple-800' :
+                      module.badgeColor === 'indigo' ? 'bg-indigo-100 text-indigo-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
                       {module.badge}
                     </span>
                   )}
@@ -116,7 +124,15 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ isOpen, onClose }) 
                         <item.icon className="w-4 h-4 mr-3 text-gray-500 group-hover:text-gray-700" />
                         <span className="flex-1">{item.title}</span>
                         {item.badge && (
-                          <span className={`px-1.5 py-0.5 text-xs font-medium rounded-full ${item.badgeColor}`}>
+                          <span className={`px-1.5 py-0.5 text-xs font-medium rounded-full ${
+                            item.badgeColor === 'blue' ? 'bg-blue-100 text-blue-800' :
+                            item.badgeColor === 'green' ? 'bg-green-100 text-green-800' :
+                            item.badgeColor === 'red' ? 'bg-red-100 text-red-800' :
+                            item.badgeColor === 'yellow' ? 'bg-yellow-100 text-yellow-800' :
+                            item.badgeColor === 'purple' ? 'bg-purple-100 text-purple-800' :
+                            item.badgeColor === 'indigo' ? 'bg-indigo-100 text-indigo-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
                             {item.badge}
                           </span>
                         )}
@@ -136,7 +152,15 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ isOpen, onClose }) 
                 <span className="flex-1 font-medium">{module.title}</span>
                 {/* Badge */}
                 {module.badge && (
-                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${module.badgeColor}`}>
+                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                    module.badgeColor === 'blue' ? 'bg-blue-100 text-blue-800' :
+                    module.badgeColor === 'green' ? 'bg-green-100 text-green-800' :
+                    module.badgeColor === 'red' ? 'bg-red-100 text-red-800' :
+                    module.badgeColor === 'yellow' ? 'bg-yellow-100 text-yellow-800' :
+                    module.badgeColor === 'purple' ? 'bg-purple-100 text-purple-800' :
+                    module.badgeColor === 'indigo' ? 'bg-indigo-100 text-indigo-800' :
+                    'bg-gray-100 text-gray-800'
+                  }`}>
                     {module.badge}
                   </span>
                 )}

@@ -39,20 +39,31 @@ export const LoginDebugger: React.FC<LoginDebuggerProps> = ({ isVisible, onClose
     await new Promise(resolve => setTimeout(resolve, 500));
 
     const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL;
+    const nodeEnv = process.env.NODE_ENV;
+    
     if (!apiBaseUrl) {
       newChecks[0] = {
         name: 'Environment Variables',
         status: 'error',
         message: 'API Base URL not configured',
-        details: 'NEXT_PUBLIC_API_BASE_URL environment variable is missing',
+        details: `Missing NEXT_PUBLIC_API_BASE_URL. Current ENV: ${nodeEnv}. Expected production URL: https://rejlers-backend-production.up.railway.app/api/v1`,
+        action: () => window.open('https://vercel.com/docs/concepts/projects/environment-variables', '_blank')
+      };
+    } else if (apiBaseUrl.includes('localhost') && nodeEnv === 'production') {
+      newChecks[0] = {
+        name: 'Environment Variables', 
+        status: 'error',
+        message: 'Using localhost URL in production',
+        details: `Current API URL: ${apiBaseUrl}. This will not work in production. Should be: https://rejlers-backend-production.up.railway.app/api/v1`,
         action: () => window.open('https://vercel.com/docs/concepts/projects/environment-variables', '_blank')
       };
     } else {
       newChecks[0] = {
         name: 'Environment Variables',
         status: 'success',
-        message: `API URL: ${apiBaseUrl}`,
-        details: 'Environment variables are configured'
+        message: `Environment: ${nodeEnv}`,
+        details: `API URL: ${apiBaseUrl}\nWebSocket URL: ${wsUrl || 'Not set'}\nCorrect production configuration detected`
       };
     }
 

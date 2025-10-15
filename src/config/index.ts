@@ -4,22 +4,43 @@ import type { AppConfig } from '@/types';
 const isDevelopment = process.env.NODE_ENV === 'development';
 const isProduction = process.env.NODE_ENV === 'production';
 
+// Debug environment variables (only in development or when debug is enabled)
+const debugEnvironment = () => {
+  if (isDevelopment || process.env.NEXT_PUBLIC_DEBUG === 'true') {
+    console.log('🔍 Environment Debug Info:');
+    console.log('  NODE_ENV:', process.env.NODE_ENV);
+    console.log('  NEXT_PUBLIC_API_BASE_URL:', process.env.NEXT_PUBLIC_API_BASE_URL);
+    console.log('  NEXT_PUBLIC_WS_URL:', process.env.NEXT_PUBLIC_WS_URL);
+    console.log('  NEXT_PUBLIC_BACKEND_URL:', process.env.NEXT_PUBLIC_BACKEND_URL);
+    console.log('  Is Production:', isProduction);
+    console.log('  Is Development:', isDevelopment);
+  }
+};
+
+// Call debug function
+debugEnvironment();
+
 // API Configuration with Railway backend support and fallbacks
 const getApiBaseUrl = () => {
   // Priority order for API URL resolution
   if (process.env.NEXT_PUBLIC_API_BASE_URL) {
-    console.log('📡 Using API URL from environment:', process.env.NEXT_PUBLIC_API_BASE_URL);
-    return process.env.NEXT_PUBLIC_API_BASE_URL;
+    const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    console.log('📡 Using API URL from environment:', apiUrl);
+    
+    // Validate URL format
+    try {
+      new URL(apiUrl);
+      return apiUrl;
+    } catch (error) {
+      console.error('❌ Invalid API URL in environment variables:', apiUrl);
+    }
   }
   
   // Fallback URLs based on environment
   if (isProduction) {
-    const productionUrls = [
-      'https://rejlers-backend-production.up.railway.app/api/v1',
-      'https://rejlers-backend.railway.app/api/v1',
-    ];
-    console.log('🏭 Production environment - using Railway backend:', productionUrls[0]);
-    return productionUrls[0];
+    const productionUrl = 'https://rejlers-backend-production.up.railway.app/api/v1';
+    console.log('🏭 Production environment - using Railway backend:', productionUrl);
+    return productionUrl;
   }
   
   console.log('🛠️ Development environment - using localhost');
@@ -28,14 +49,19 @@ const getApiBaseUrl = () => {
 
 const getWebSocketUrl = () => {
   if (process.env.NEXT_PUBLIC_WS_URL) {
-    return process.env.NEXT_PUBLIC_WS_URL;
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL;
+    console.log('🔗 Using WebSocket URL from environment:', wsUrl);
+    return wsUrl;
   }
   
   // Fallback based on environment
   if (isProduction) {
-    return 'wss://rejlers-backend-production.up.railway.app/ws';
+    const productionWsUrl = 'wss://rejlers-backend-production.up.railway.app/ws';
+    console.log('🏭 Production WebSocket - using Railway backend:', productionWsUrl);
+    return productionWsUrl;
   }
   
+  console.log('🛠️ Development WebSocket - using localhost');
   return 'ws://localhost:8000/ws';
 };
 

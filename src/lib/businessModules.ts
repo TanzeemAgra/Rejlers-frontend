@@ -111,7 +111,7 @@ class BusinessModuleService {
   async getProjectStats() {
     try {
       const [projects] = await Promise.all([
-        this.apiCall('/projects/api/projects/projects/'),
+        this.apiCall('/projects/projects/'),
       ]);
 
       return {
@@ -130,9 +130,9 @@ class BusinessModuleService {
   async getFinanceStats() {
     try {
       const [budgets, invoices, expenses] = await Promise.all([
-        this.apiCall('/finance/api/finance/budgets/'),
-        this.apiCall('/finance/api/finance/invoices/'),
-        this.apiCall('/finance/api/finance/expenses/'),
+        this.apiCall('/finance/budgets/'),
+        this.apiCall('/finance/invoices/'),
+        this.apiCall('/finance/expenses/'),
       ]);
 
       const totalBudget = budgets.results?.reduce((sum: number, b: any) => sum + parseFloat(b.total_amount || 0), 0) || 0;
@@ -183,8 +183,8 @@ class BusinessModuleService {
   async getSalesStats() {
     try {
       const [leads, opportunities] = await Promise.all([
-        this.apiCall('/sales/api/sales/leads/'),
-        this.apiCall('/sales/api/sales/opportunities/'),
+        this.apiCall('/sales/leads/'),
+        this.apiCall('/sales/opportunities/'),
       ]);
 
       const totalRevenue = opportunities.results?.reduce((sum: number, o: any) => {
@@ -209,8 +209,8 @@ class BusinessModuleService {
   async getHSEStats() {
     try {
       const [incidents, assessments] = await Promise.all([
-        this.apiCall('/hse/api/hse/incidents/'),
-        this.apiCall('/hse/api/hse/assessments/'),
+        this.apiCall('/hse/incidents/'),
+        this.apiCall('/hse/assessments/'),
       ]);
 
       const activeIncidents = incidents.results?.filter((i: any) => !i.is_resolved).length || 0;
@@ -233,8 +233,8 @@ class BusinessModuleService {
   async getSupplyChainStats() {
     try {
       const [vendors, orders] = await Promise.all([
-        this.apiCall('/supply-chain/api/supply-chain/vendors/'),
-        this.apiCall('/supply-chain/api/supply-chain/purchase-orders/'),
+        this.apiCall('/supply-chain/vendors/'),
+        this.apiCall('/supply-chain/purchase-orders/'),
       ]);
 
       const activeOrders = orders.results?.filter((o: any) => 

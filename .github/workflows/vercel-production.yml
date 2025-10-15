@@ -26,7 +26,7 @@ jobs:
         
       - name: Build and Deploy to Vercel
         run: |
-          vercel --token ${{ secrets.VERCEL_TOKEN }} --prod --yes --confirm
+          vercel --token ${{ secrets.VERCEL_TOKEN }} --prod --yes --force
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           NODE_ENV: production

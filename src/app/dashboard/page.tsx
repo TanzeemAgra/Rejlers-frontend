@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { authService } from '@/lib/auth';
 import { businessModuleService, DashboardStats, RecentActivity } from '@/lib/businessModules';
-import DashboardSidebar from '@/components/dashboard/DashboardSidebar';
+import BulletproofSidebar from '@/components/dashboard/BulletproofSidebar';
 import Logo from '@/components/ui/Logo';
 import MockAuthSetup from '@/components/dev/MockAuthSetup';
 
@@ -125,12 +125,10 @@ const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 flex">
       {/* Sidebar */}
-      <DashboardSidebar 
-        isOpen={sidebarOpen} 
-        onClose={() => setSidebarOpen(false)} 
-      />
-
-      {/* Main Content */}
+        <BulletproofSidebar 
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+        />      {/* Main Content */}
       <div className="flex-1 flex flex-col min-h-screen">
         {/* Header */}
         <header className="bg-white shadow-sm border-b">
@@ -180,20 +178,6 @@ const Dashboard: React.FC = () => {
 
         {/* Main Dashboard Content */}
         <div className="flex-1 p-6 overflow-auto">
-          {/* Debug Banner - Enhanced Production Debugging */}
-          <div className="mb-4 bg-gradient-to-r from-red-100 to-orange-100 border border-red-300 rounded-lg p-4 text-center">
-            <div className="text-red-800 font-bold text-lg">≡ƒöº PRODUCTION DEBUG: MAIN DASHBOARD LOADED</div>
-            <div className="text-red-700 text-sm mt-1">
-              Environment: {process.env.NODE_ENV} | User: {user?.username || 'Unknown'} | 
-              Role: {user?.is_superuser ? 'Super Admin' : user?.is_staff ? 'Staff' : 'User'}
-            </div>
-            <div className="text-red-600 text-xs mt-1">
-              Stats Loaded: {stats ? 'Γ£à Yes' : 'Γ¥î No'} | 
-              Activities: {activities?.length || 0} | 
-              API: {businessModuleService.getBaseUrl()}
-            </div>
-          </div>
-          
           {/* Welcome Section */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -539,19 +523,6 @@ const Dashboard: React.FC = () => {
       
       {/* Development Authentication Setup */}
       {process.env.NODE_ENV === 'development' && <MockAuthSetup />}
-      
-      {/* Production Debug Info */}
-      {process.env.NODE_ENV === 'production' && user && (
-        <div className="fixed bottom-4 right-4 bg-purple-100 border border-purple-300 rounded-lg p-3 text-sm max-w-xs">
-          <div className="text-purple-800 font-medium">Production Mode</div>
-          <div className="text-purple-600 text-xs mt-1">
-            User: {user.username || user.email}
-          </div>
-          <div className="text-purple-600 text-xs">
-            Role: {user.is_superuser ? 'Super Admin' : user.is_staff ? 'Staff' : 'User'}
-          </div>
-        </div>
-      )}
     </div>
   );
 };

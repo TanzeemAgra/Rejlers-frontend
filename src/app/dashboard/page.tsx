@@ -31,7 +31,8 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Make sidebar open by default in production to match local environment
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
     const initializeDashboard = async () => {
@@ -179,10 +180,18 @@ const Dashboard: React.FC = () => {
 
         {/* Main Dashboard Content */}
         <div className="flex-1 p-6 overflow-auto">
-          {/* Debug Banner - Remove after testing */}
-          <div className="mb-4 bg-red-100 border border-red-300 rounded-lg p-3 text-center">
-            <div className="text-red-800 font-bold">🔧 DEBUG: MAIN DASHBOARD COMPONENT LOADED</div>
-            <div className="text-red-600 text-sm">Environment: {process.env.NODE_ENV} | User: {user?.username} | Role: {user?.is_superuser ? 'Super Admin' : user?.is_staff ? 'Staff' : 'User'}</div>
+          {/* Debug Banner - Enhanced Production Debugging */}
+          <div className="mb-4 bg-gradient-to-r from-red-100 to-orange-100 border border-red-300 rounded-lg p-4 text-center">
+            <div className="text-red-800 font-bold text-lg">🔧 PRODUCTION DEBUG: MAIN DASHBOARD LOADED</div>
+            <div className="text-red-700 text-sm mt-1">
+              Environment: {process.env.NODE_ENV} | User: {user?.username || 'Unknown'} | 
+              Role: {user?.is_superuser ? 'Super Admin' : user?.is_staff ? 'Staff' : 'User'}
+            </div>
+            <div className="text-red-600 text-xs mt-1">
+              Stats Loaded: {stats ? '✅ Yes' : '❌ No'} | 
+              Activities: {activities?.length || 0} | 
+              API: {businessModuleService.getBaseUrl()}
+            </div>
           </div>
           
           {/* Welcome Section */}

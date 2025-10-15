@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
@@ -72,6 +72,10 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ isOpen, onClose }) 
       <div className="p-6">
         <h1 className="text-xl font-bold text-gray-900">REJLERS</h1>
         <p className="text-sm text-gray-500">Dashboard</p>
+        {/* Debug info */}
+        <div className="mt-2 text-xs text-green-600">
+          🔧 Sidebar Loaded | Modules: {filteredModules.length} | Permissions: {userPermissions.length}
+        </div>
       </div>
       <nav className="p-4 space-y-2">
         {filteredModules.map((module) => (
@@ -144,24 +148,24 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ isOpen, onClose }) 
     </div>
   );
 
-  if (isOpen !== undefined) {
-    return (
-      <>
-        {isOpen && (
-          <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50" onClick={onClose}>
-            <div className="w-80 h-full" onClick={(e) => e.stopPropagation()}>
-              {sidebarContent}
-            </div>
+  // Always show sidebar on desktop, mobile overlay when isOpen
+  return (
+    <>
+      {/* Mobile overlay when open */}
+      {isOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50" onClick={onClose}>
+          <div className="w-80 h-full" onClick={(e) => e.stopPropagation()}>
+            {sidebarContent}
           </div>
-        )}
-        <div className="hidden lg:block">
-          {sidebarContent}
         </div>
-      </>
-    );
-  }
-
-  return sidebarContent;
+      )}
+      
+      {/* Desktop sidebar - always visible */}
+      <div className="hidden lg:block">
+        {sidebarContent}
+      </div>
+    </>
+  );
 };
 
 export default DashboardSidebar;

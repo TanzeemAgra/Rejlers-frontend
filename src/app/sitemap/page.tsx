@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import Header from '@/components/ui/Header';
+import { Header } from '@/components/ui';
 import SitemapClient from './SitemapClient';
 
 export const metadata: Metadata = {

@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import Header from '@/components/ui/Header';
-import Footer from '@/components/ui/Footer';
+import { Header, Footer } from '@/components/ui';
 import { blogPosts, blogCategories, getFeaturedPosts, getPostsByCategory, BlogPost, BlogCategory } from '@/data/blogData';
 import finixpaThemeConfig from '@/config/finixpaTheme';
 

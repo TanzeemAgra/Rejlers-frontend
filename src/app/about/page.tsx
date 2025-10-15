@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Header from "@/components/ui/Header";
-import Footer from "@/components/ui/Footer";
+import { Header, Footer } from "@/components/ui";
 import finixpaThemeConfig from "@/config/finixpaTheme";
 
 const AboutPage = () => {

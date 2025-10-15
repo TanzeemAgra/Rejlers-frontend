@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { landingPageConfig } from '@/data/landingPageConfig';
-import Header from '@/components/ui/Header';
+import { Header } from '@/components/ui';
 import HeroBanner from '@/components/ui/HeroBanner';
 import AboutUs from '@/components/ui/AboutUs';
 import Services from '@/components/ui/Services';
@@ -12,7 +12,7 @@ import ProjectGallery from '@/components/ui/ProjectGallery';
 import Team from '@/components/ui/Team';
 import Testimonials from '@/components/ui/Testimonials';
 import Blog from '@/components/ui/Blog';
-import Footer from '@/components/ui/Footer';
+import { Footer } from '@/components/ui';
 
 // Hero Section Component (Slider)
 const HeroSection: React.FC = () => {

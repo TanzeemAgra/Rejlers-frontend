@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, User, Mail, Lock, ArrowRight, Building2, Phone } from 'lucide-react';
 import Link from 'next/link';
-import Header from '@/components/ui/Header';
+import { Header } from '@/components/ui';
 
 const RegisterPage: React.FC = () => {
   const [formData, setFormData] = useState({

@@ -1,8 +1,8 @@
 "use client"
 
 import React, { useState, useEffect, useRef } from "react";
-import Header from "@/components/ui/Header";
-import Footer from "@/components/ui/Footer";
+import { Header } from "@/components/ui";
+import { Footer } from "@/components/ui";
 import finixpaTheme from "../../config/finixpaTheme";
 
 interface AdvancedMetrics {

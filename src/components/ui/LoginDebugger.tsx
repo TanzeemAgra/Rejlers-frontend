@@ -3,6 +3,8 @@
  * This component provides comprehensive error handling and debugging for production login issues
  */
 
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, CheckCircle, RefreshCw, ExternalLink, Bug } from 'lucide-react';
 

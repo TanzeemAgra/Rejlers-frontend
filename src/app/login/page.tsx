@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Eye, EyeOff, User, Lock, Mail, ArrowRight, Shield, Building2, Bug, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import Header from '@/components/ui/Header';
+import { Header } from '@/components/ui';
 import { authService } from '@/lib/auth';
 import { enhancedAuthService } from '@/lib/enhancedAuth';
 import Logo from '@/components/ui/Logo';

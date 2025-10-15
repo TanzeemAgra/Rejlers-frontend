@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import Footer from '@/components/ui/Footer';
+import { Footer } from '@/components/ui';
 import { finixpaThemeConfig } from '@/config/finixpaTheme';
 
 // Site structure interface

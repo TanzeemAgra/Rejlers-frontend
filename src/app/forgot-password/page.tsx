@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Mail, CheckCircle, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import Header from '@/components/ui/Header';
+import { Header } from '@/components/ui';
 
 const ForgotPasswordPage: React.FC = () => {
   const [email, setEmail] = useState('');

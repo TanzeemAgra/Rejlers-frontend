@@ -58,6 +58,21 @@ class AuthService {
       console.log('Attempting login to:', loginUrl);
       console.log('CORS Check - Using baseUrl from config:', this.baseUrl);
       
+      // Test backend connectivity first
+      try {
+        const healthCheck = await fetch(`${this.baseUrl}/health/`, {
+          method: 'GET',
+          mode: 'cors',
+        });
+        console.log('Backend health check status:', healthCheck.status);
+        if (!healthCheck.ok) {
+          console.warn('Backend health check failed:', healthCheck.status);
+        }
+      } catch (healthError) {
+        console.error('Backend connectivity test failed:', healthError);
+        throw new Error('Unable to connect to the server. Please try again or contact support.');
+      }
+      
       const response = await fetch(loginUrl, {
         method: 'POST',
         mode: 'cors', // Explicitly set CORS mode
@@ -70,6 +85,7 @@ class AuthService {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
+        console.error('Login failed with status:', response.status, errorData);
         throw new Error(errorData.detail || errorData.message || 'Login failed');
       }
 
@@ -84,6 +100,12 @@ class AuthService {
       return data;
     } catch (error) {
       console.error('Login error:', error);
+      
+      // Provide user-friendly error messages
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('Unable to connect to the server. Please try again or contact support.');
+      }
+      
       throw error;
     }
   }

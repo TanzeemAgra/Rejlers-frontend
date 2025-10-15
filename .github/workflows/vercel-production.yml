@@ -19,26 +19,22 @@ jobs:
           cache: 'npm'
           
       - name: Install dependencies
-        run: |
-          npm install
-          npm ci
+        run: npm ci
         
-      - name: Build Application
-        run: npm run build
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+        
+      - name: Build and Deploy to Vercel
+        run: |
+          vercel --token ${{ secrets.VERCEL_TOKEN }} --prod --yes --confirm
         env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           NODE_ENV: production
           NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL }}
           NEXT_PUBLIC_WS_URL: ${{ secrets.NEXT_PUBLIC_WS_URL }}
           NEXT_PUBLIC_BACKEND_URL: ${{ secrets.NEXT_PUBLIC_BACKEND_URL }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           NEXT_PUBLIC_OPENAI_API_KEY: ${{ secrets.NEXT_PUBLIC_OPENAI_API_KEY }}
-          
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-args: '--prod'
-          working-directory: ./
           
       - name: Deployment Summary
         run: |

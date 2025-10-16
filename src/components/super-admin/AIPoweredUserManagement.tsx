@@ -60,7 +60,7 @@ interface AIInsight {
   description: string;
   impact: 'high' | 'medium' | 'low';
   action?: string;
-  icon: React.ComponentType;
+  icon: React.ComponentType<{ className?: string }>;
 }
 
 const AIPoweredUserManagement: React.FC = () => {

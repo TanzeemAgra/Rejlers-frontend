@@ -36,7 +36,7 @@ interface AnalyticsCard {
   title: string;
   value: string | number;
   change: number;
-  icon: React.ComponentType;
+  icon: React.ComponentType<{ className?: string }>;
   color: string;
   trend: 'up' | 'down' | 'stable';
 }
@@ -221,7 +221,7 @@ const AIDashboard: React.FC = () => {
           >
             <div className="flex items-center justify-between mb-4">
               <div className={`p-3 ${card.color} rounded-lg`}>
-                {React.createElement(card.icon, { className: "w-6 h-6 text-white" })}
+                <card.icon className="w-6 h-6 text-white" />
               </div>
               <div className={`flex items-center space-x-1 ${
                 card.trend === 'up' ? 'text-green-600' : card.trend === 'down' ? 'text-red-600' : 'text-gray-600'

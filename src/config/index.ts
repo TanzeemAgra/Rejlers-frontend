@@ -20,8 +20,12 @@ const debugEnvironment = () => {
 // Call debug function
 debugEnvironment();
 
-// API Configuration with Railway backend support and fallbacks
+// API Configuration with Railway backend support and multi-environment fallbacks
 const getApiBaseUrl = () => {
+  // Environment detection
+  const isVercelProduction = process.env.VERCEL === '1' && isProduction;
+  const isDockerMode = process.env.NEXT_PUBLIC_DOCKER_MODE === 'true';
+  
   // Priority order for API URL resolution
   if (process.env.NEXT_PUBLIC_API_BASE_URL) {
     const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -30,13 +34,26 @@ const getApiBaseUrl = () => {
     // Validate URL format
     try {
       new URL(apiUrl);
+      if (isVercelProduction) {
+        console.log('🚀 Vercel Production → Railway Backend:', apiUrl);
+      } else if (isDockerMode) {
+        console.log('🐳 Docker Development mode:', apiUrl);
+      } else {
+        console.log('💻 Local Development mode:', apiUrl);
+      }
       return apiUrl;
     } catch (error) {
       console.error('❌ Invalid API URL in environment variables:', apiUrl);
     }
   }
   
-  // Fallback URLs based on environment
+  // Smart fallback URLs based on environment
+  if (isVercelProduction) {
+    const railwayUrl = 'https://rejlers-backend-production.up.railway.app/api/v1';
+    console.log('🏭 Vercel Production (fallback) → Railway backend:', railwayUrl);
+    return railwayUrl;
+  }
+  
   if (isProduction) {
     const productionUrl = 'https://rejlers-backend-production.up.railway.app/api/v1';
     console.log('🏭 Production environment - using Railway backend:', productionUrl);

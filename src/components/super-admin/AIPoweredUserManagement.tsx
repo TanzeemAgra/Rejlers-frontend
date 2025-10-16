@@ -40,7 +40,8 @@ import {
   CheckCircle,
   ArrowRight,
   Globe,
-  Network
+  Network,
+  X
 } from 'lucide-react';
 import { rbacService, Role, User, UserPermissions, SystemInfo } from '@/lib/rbac';
 import { authService } from '@/lib/auth';
@@ -78,6 +79,31 @@ const AIPoweredUserManagement: React.FC = () => {
   const [showRoleAssignment, setShowRoleAssignment] = useState(false);
   const [showAIAnalytics, setShowAIAnalytics] = useState(false);
   const [isGeneratingInsights, setIsGeneratingInsights] = useState(false);
+
+  // Advanced User Management State
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [showBulkImportModal, setShowBulkImportModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [newUserForm, setNewUserForm] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    username: '',
+    phone: '',
+    department: '',
+    position: '',
+    password: '',
+    confirm_password: '',
+    role_id: '',
+    is_active: true,
+    send_welcome_email: true
+  });
+  const [bulkImportFile, setBulkImportFile] = useState<File | null>(null);
+  const [bulkImportData, setBulkImportData] = useState<any[]>([]);
+  const [bulkImportPreview, setBulkImportPreview] = useState<any[]>([]);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{ type: 'success' | 'error' | null; message: string }>({ type: null, message: '' });
 
   // AI-Powered Insights Generation
   const generateAIInsights = async () => {
@@ -129,17 +155,143 @@ const AIPoweredUserManagement: React.FC = () => {
     }, 2000);
   };
 
-  // AI Role Recommendation Engine
-  const generateRoleRecommendations = (user: User): AIRoleRecommendation[] => {
+  // SMART FORM VALIDATION ENGINE
+  const validateUserForm = (formData: typeof newUserForm): Record<string, string> => {
+    const errors: Record<string, string> = {};
+    
+    // AI-Enhanced Validation Rules
+    if (!formData.first_name.trim()) errors.first_name = 'First name is required';
+    if (!formData.last_name.trim()) errors.last_name = 'Last name is required';
+    
+    // Email validation with domain intelligence
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formData.email.trim()) {
+      errors.email = 'Email is required';
+    } else if (!emailRegex.test(formData.email)) {
+      errors.email = 'Please enter a valid email address';
+    } else if (users.some(user => user.email === formData.email)) {
+      errors.email = 'Email already exists in the system';
+    }
+    
+    // Username validation
+    if (!formData.username.trim()) {
+      errors.username = 'Username is required';
+    } else if (formData.username.length < 3) {
+      errors.username = 'Username must be at least 3 characters';
+    } else if (users.some(user => user.username === formData.username)) {
+      errors.username = 'Username already exists';
+    }
+    
+    // Password strength validation
+    if (!formData.password) {
+      errors.password = 'Password is required';
+    } else if (formData.password.length < 8) {
+      errors.password = 'Password must be at least 8 characters';
+    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+      errors.password = 'Password must contain uppercase, lowercase, and number';
+    }
+    
+    if (formData.password !== formData.confirm_password) {
+      errors.confirm_password = 'Passwords do not match';
+    }
+    
+    // Role validation
+    if (!formData.role_id) {
+      errors.role_id = 'Please select a role';
+    }
+    
+    return errors;
+  };
+
+  // AI-POWERED ROLE RECOMMENDATION ENGINE FOR NEW USERS
+  const generateRoleRecommendations = (userData: typeof newUserForm): AIRoleRecommendation[] => {
     if (!roles) return [];
     
-    const allRoles = [
-      ...roles.enterprise_roles,
-      ...roles.functional_roles,
-      ...roles.ai_powered_roles
-    ];
+    const allRoles = [...roles.enterprise_roles, ...roles.functional_roles, ...roles.ai_powered_roles];
+    const recommendations: AIRoleRecommendation[] = [];
     
-    // AI-powered role matching algorithm
+    // Department-based intelligence
+    const departmentRoleMap: Record<string, string[]> = {
+      'human_resources': ['HR Manager', 'HR Analyst', 'Recruitment Specialist'],
+      'engineering': ['Engineer', 'Senior Engineer', 'Tech Lead'],
+      'finance': ['Financial Analyst', 'Accountant', 'Finance Manager'],
+      'operations': ['Operations Manager', 'Project Manager', 'Business Analyst'],
+      'it': ['IT Administrator', 'System Administrator', 'DevOps Engineer'],
+      'sales': ['Sales Representative', 'Sales Manager', 'Account Manager'],
+      'marketing': ['Marketing Specialist', 'Content Manager', 'Digital Marketing Manager']
+    };
+    
+    // Position-based intelligence
+    const positionRoleMap: Record<string, string[]> = {
+      'manager': ['Manager', 'Senior Manager', 'Department Head'],
+      'analyst': ['Analyst', 'Senior Analyst', 'Lead Analyst'],
+      'specialist': ['Specialist', 'Senior Specialist', 'Subject Matter Expert'],
+      'administrator': ['Administrator', 'System Administrator', 'IT Administrator'],
+      'coordinator': ['Coordinator', 'Project Coordinator', 'Operations Coordinator']
+    };
+    
+    // Generate recommendations based on department
+    if (userData.department) {
+      const deptRoles = departmentRoleMap[userData.department.toLowerCase()] || [];
+      deptRoles.forEach(roleName => {
+        const role = allRoles.find(r => r.name.toLowerCase().includes(roleName.toLowerCase()));
+        if (role) {
+          recommendations.push({
+            role,
+            confidence: 85,
+            reasoning: [`Matches department: ${userData.department}`, 'Common role for this department'],
+            matchingFactors: ['Department Match', 'Industry Standard']
+          });
+        }
+      });
+    }
+    
+    // Generate recommendations based on position
+    if (userData.position) {
+      const positionKey = Object.keys(positionRoleMap).find(key => 
+        userData.position.toLowerCase().includes(key)
+      );
+      if (positionKey) {
+        const posRoles = positionRoleMap[positionKey];
+        posRoles.forEach(roleName => {
+          const role = allRoles.find(r => r.name.toLowerCase().includes(roleName.toLowerCase()));
+          if (role && !recommendations.some(rec => rec.role.id === role.id)) {
+            recommendations.push({
+              role,
+              confidence: 75,
+              reasoning: [`Matches position: ${userData.position}`, 'Role hierarchy alignment'],
+              matchingFactors: ['Position Match', 'Career Path']
+            });
+          }
+        });
+      }
+    }
+    
+    // Default recommendations for new users
+    if (recommendations.length === 0) {
+      const defaultRoles = allRoles.filter(role => 
+        role.name.toLowerCase().includes('employee') || 
+        role.name.toLowerCase().includes('user') ||
+        role.name.toLowerCase().includes('basic')
+      );
+      defaultRoles.slice(0, 3).forEach(role => {
+        recommendations.push({
+          role,
+          confidence: 60,
+          reasoning: ['Safe default role for new users', 'Can be upgraded later'],
+          matchingFactors: ['Default Assignment', 'Security Best Practice']
+        });
+      });
+    }
+    
+    return recommendations.sort((a, b) => b.confidence - a.confidence).slice(0, 5);
+  };
+
+  // AI-POWERED ROLE RECOMMENDATION ENGINE FOR EXISTING USERS
+  const generateUserRoleRecommendations = (user: User): AIRoleRecommendation[] => {
+    if (!roles) return [];
+    
+    const allRoles = [...roles.enterprise_roles, ...roles.functional_roles, ...roles.ai_powered_roles];
     const recommendations: AIRoleRecommendation[] = [];
     
     allRoles.forEach(role => {
@@ -183,15 +335,6 @@ const AIPoweredUserManagement: React.FC = () => {
         }
       }
       
-      // Enterprise role matching for senior positions
-      if (user.job_title?.toLowerCase().includes('cto') || user.job_title?.toLowerCase().includes('cfo') || user.job_title?.toLowerCase().includes('cdo')) {
-        if (roles.enterprise_roles.includes(role)) {
-          confidence += 50;
-          reasoning.push('Executive level position match');
-          matchingFactors.push('C-Suite Executive');
-        }
-      }
-      
       if (confidence >= 25) {
         recommendations.push({
           role,
@@ -205,7 +348,187 @@ const AIPoweredUserManagement: React.FC = () => {
     return recommendations.sort((a, b) => b.confidence - a.confidence).slice(0, 3);
   };
 
-  // Data Loading
+  // ADVANCED USER CREATION HANDLER
+  const handleCreateUser = async () => {
+    setIsSubmitting(true);
+    setSubmitStatus({ type: null, message: '' });
+    
+    // Validate form
+    const errors = validateUserForm(newUserForm);
+    setFormErrors(errors);
+    
+    if (Object.keys(errors).length > 0) {
+      setIsSubmitting(false);
+      setSubmitStatus({ type: 'error', message: 'Please fix the validation errors before submitting.' });
+      return;
+    }
+    
+    try {
+      // Prepare user data for API
+      const userData = {
+        first_name: newUserForm.first_name.trim(),
+        last_name: newUserForm.last_name.trim(),
+        email: newUserForm.email.trim().toLowerCase(),
+        username: newUserForm.username.trim().toLowerCase(),
+        phone: newUserForm.phone.trim(),
+        department: newUserForm.department.trim(),
+        position: newUserForm.position.trim(),
+        password: newUserForm.password,
+        role_id: parseInt(newUserForm.role_id),
+        is_active: newUserForm.is_active,
+        send_welcome_email: newUserForm.send_welcome_email,
+        created_via: 'super_admin_interface',
+        ai_recommended_role: roleRecommendations.length > 0 ? roleRecommendations[0].role.id : null
+      };
+      
+      // Call API to create user using authService
+      const newUser = await authService.createUser(userData);
+      setUsers(prev => [...prev, newUser]);
+      setSubmitStatus({ type: 'success', message: 'User created successfully!' });
+      
+      // Reset form
+      setNewUserForm({
+        first_name: '',
+        last_name: '',
+        email: '',
+        username: '',
+        phone: '',
+        department: '',
+        position: '',
+        password: '',
+        confirm_password: '',
+        role_id: '',
+          is_active: true,
+          send_welcome_email: true
+        });
+        
+        // Close modal after 2 seconds
+        setTimeout(() => {
+          setShowAddUserModal(false);
+          setSubmitStatus({ type: null, message: '' });
+        }, 2000);
+        
+    } catch (error) {
+      console.error('Error creating user:', error);
+      setSubmitStatus({ type: 'error', message: 'Network error. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // BULK IMPORT PROCESSING ENGINE
+  const handleBulkImportFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    setBulkImportFile(file);
+    
+    // Parse CSV/Excel file
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      const lines = text.split('\n').filter(line => line.trim());
+      
+      if (lines.length < 2) {
+        setSubmitStatus({ type: 'error', message: 'File must contain at least a header row and one data row' });
+        return;
+      }
+      
+      const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+      const data = lines.slice(1).map(line => {
+        const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+        const obj: any = {};
+        headers.forEach((header, index) => {
+          obj[header.toLowerCase().replace(/\s+/g, '_')] = values[index] || '';
+        });
+        return obj;
+      });
+      
+      setBulkImportData(data);
+      setBulkImportPreview(data.slice(0, 5)); // Show first 5 rows as preview
+    };
+    
+    reader.readAsText(file);
+  };
+
+  // BULK USER CREATION HANDLER
+  const handleBulkCreateUsers = async () => {
+    setIsSubmitting(true);
+    setSubmitStatus({ type: null, message: '' });
+    
+    try {
+      const result = await authService.createBulkUsers(bulkImportData.map(user => ({
+        ...user,
+        send_welcome_emails: true,
+        created_via: 'bulk_import'
+      })));
+      
+      setSubmitStatus({ 
+        type: 'success', 
+        message: `Successfully created ${result.created_count || bulkImportData.length} users. ${result.failed_count > 0 ? `${result.failed_count} failed.` : ''}` 
+      });
+      
+      // Refresh users list by reloading the component data
+      window.location.reload();
+      
+      // Close modal after 3 seconds
+      setTimeout(() => {
+        setShowBulkImportModal(false);
+        setBulkImportFile(null);
+        setBulkImportData([]);
+        setBulkImportPreview([]);
+        setSubmitStatus({ type: null, message: '' });
+      }, 3000);
+        
+    } catch (error) {
+      console.error('Error with bulk import:', error);
+      setSubmitStatus({ type: 'error', message: 'Network error during bulk import' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ADVANCED EXPORT HANDLER
+  const handleExportUsers = () => {
+    const csvHeaders = ['First Name', 'Last Name', 'Email', 'Username', 'Employee ID', 'Department', 'Position', 'Role', 'Status', 'Created Date'];
+    const csvData = users.map(user => [
+      user.first_name || '',
+      user.last_name || '',
+      user.email || '',
+      user.username || '',
+      user.employee_id || '',
+      user.department || '',
+      user.position || '',
+      user.role?.name || 'No Role',
+      user.is_verified ? 'Active' : 'Inactive',
+      user.created_at ? new Date(user.created_at).toLocaleDateString() : ''
+    ]);
+    
+    const csvContent = [csvHeaders, ...csvData]
+      .map(row => row.map(field => `"${field}"`).join(','))
+      .join('\n');
+    
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `users_export_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    window.URL.revokeObjectURL(url);
+    
+    setSubmitStatus({ type: 'success', message: 'Users exported successfully!' });
+    setTimeout(() => setSubmitStatus({ type: null, message: '' }), 3000);
+  };
+
+  // Update role recommendations when form changes
+  useEffect(() => {
+    if (newUserForm.department || newUserForm.position) {
+      const recommendations = generateRoleRecommendations(newUserForm);
+      setRoleRecommendations(recommendations);
+    }
+  }, [newUserForm.department, newUserForm.position, roles]);
+
+  // Data Loading useEffect
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -548,11 +871,24 @@ const AIPoweredUserManagement: React.FC = () => {
           </div>
           
           <div className="flex items-center space-x-3">
-            <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+            <button 
+              onClick={() => setShowExportModal(true)}
+              className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
               <Download className="w-4 h-4" />
               <span>Export</span>
             </button>
-            <button className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+            <button 
+              onClick={() => setShowBulkImportModal(true)}
+              className="flex items-center space-x-2 px-4 py-2 border border-purple-300 text-purple-700 rounded-lg hover:bg-purple-50 transition-colors"
+            >
+              <Upload className="w-4 h-4" />
+              <span>Bulk Import</span>
+            </button>
+            <button 
+              onClick={() => setShowAddUserModal(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            >
               <UserPlus className="w-4 h-4" />
               <span>Add User</span>
             </button>
@@ -576,7 +912,7 @@ const AIPoweredUserManagement: React.FC = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredUsers.map((user) => {
-                const recommendations = generateRoleRecommendations(user);
+                const recommendations = generateUserRoleRecommendations(user);
                 return (
                   <motion.tr
                     key={user.id}
@@ -854,6 +1190,558 @@ const AIPoweredUserManagement: React.FC = () => {
                       </div>
                     </div>
                   )}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ADD USER MODAL */}
+      <AnimatePresence>
+        {showAddUserModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowAddUserModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <UserPlus className="w-6 h-6 text-purple-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-900">Add New User</h2>
+                      <p className="text-sm text-gray-600">Create a new user account with AI-powered role recommendations</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowAddUserModal(false)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5 text-gray-500" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6">
+                <form onSubmit={(e) => { e.preventDefault(); handleCreateUser(); }} className="space-y-6">
+                  {/* Status Messages */}
+                  {submitStatus.type && (
+                    <div className={`p-4 rounded-lg border ${
+                      submitStatus.type === 'success' 
+                        ? 'bg-green-50 border-green-200 text-green-800' 
+                        : 'bg-red-50 border-red-200 text-red-800'
+                    }`}>
+                      <div className="flex items-center space-x-2">
+                        {submitStatus.type === 'success' ? (
+                          <CheckCircle className="w-5 h-5" />
+                        ) : (
+                          <AlertTriangle className="w-5 h-5" />
+                        )}
+                        <span className="font-medium">{submitStatus.message}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Personal Information */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">Personal Information</h3>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
+                        <input
+                          type="text"
+                          value={newUserForm.first_name}
+                          onChange={(e) => setNewUserForm(prev => ({ ...prev, first_name: e.target.value }))}
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                            formErrors.first_name ? 'border-red-300' : 'border-gray-300'
+                          }`}
+                          placeholder="Enter first name"
+                        />
+                        {formErrors.first_name && <p className="text-xs text-red-600 mt-1">{formErrors.first_name}</p>}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
+                        <input
+                          type="text"
+                          value={newUserForm.last_name}
+                          onChange={(e) => setNewUserForm(prev => ({ ...prev, last_name: e.target.value }))}
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                            formErrors.last_name ? 'border-red-300' : 'border-gray-300'
+                          }`}
+                          placeholder="Enter last name"
+                        />
+                        {formErrors.last_name && <p className="text-xs text-red-600 mt-1">{formErrors.last_name}</p>}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Email Address *</label>
+                        <input
+                          type="email"
+                          value={newUserForm.email}
+                          onChange={(e) => setNewUserForm(prev => ({ ...prev, email: e.target.value }))}
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                            formErrors.email ? 'border-red-300' : 'border-gray-300'
+                          }`}
+                          placeholder="user@rejlers.com"
+                        />
+                        {formErrors.email && <p className="text-xs text-red-600 mt-1">{formErrors.email}</p>}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Username *</label>
+                        <input
+                          type="text"
+                          value={newUserForm.username}
+                          onChange={(e) => setNewUserForm(prev => ({ ...prev, username: e.target.value }))}
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                            formErrors.username ? 'border-red-300' : 'border-gray-300'
+                          }`}
+                          placeholder="username"
+                        />
+                        {formErrors.username && <p className="text-xs text-red-600 mt-1">{formErrors.username}</p>}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                        <input
+                          type="tel"
+                          value={newUserForm.phone}
+                          onChange={(e) => setNewUserForm(prev => ({ ...prev, phone: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          placeholder="+1 (555) 123-4567"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Professional Information */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2">Professional Information</h3>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                        <select
+                          value={newUserForm.department}
+                          onChange={(e) => setNewUserForm(prev => ({ ...prev, department: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        >
+                          <option value="">Select Department</option>
+                          <option value="human_resources">Human Resources</option>
+                          <option value="engineering">Engineering</option>
+                          <option value="finance">Finance</option>
+                          <option value="operations">Operations</option>
+                          <option value="it">Information Technology</option>
+                          <option value="sales">Sales</option>
+                          <option value="marketing">Marketing</option>
+                          <option value="legal">Legal</option>
+                          <option value="executive">Executive</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Position/Title</label>
+                        <input
+                          type="text"
+                          value={newUserForm.position}
+                          onChange={(e) => setNewUserForm(prev => ({ ...prev, position: e.target.value }))}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          placeholder="e.g., Senior Engineer, HR Manager"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Password *</label>
+                        <input
+                          type="password"
+                          value={newUserForm.password}
+                          onChange={(e) => setNewUserForm(prev => ({ ...prev, password: e.target.value }))}
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                            formErrors.password ? 'border-red-300' : 'border-gray-300'
+                          }`}
+                          placeholder="Minimum 8 characters"
+                        />
+                        {formErrors.password && <p className="text-xs text-red-600 mt-1">{formErrors.password}</p>}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password *</label>
+                        <input
+                          type="password"
+                          value={newUserForm.confirm_password}
+                          onChange={(e) => setNewUserForm(prev => ({ ...prev, confirm_password: e.target.value }))}
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                            formErrors.confirm_password ? 'border-red-300' : 'border-gray-300'
+                          }`}
+                          placeholder="Re-enter password"
+                        />
+                        {formErrors.confirm_password && <p className="text-xs text-red-600 mt-1">{formErrors.confirm_password}</p>}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Role Assignment *</label>
+                        <select
+                          value={newUserForm.role_id}
+                          onChange={(e) => setNewUserForm(prev => ({ ...prev, role_id: e.target.value }))}
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                            formErrors.role_id ? 'border-red-300' : 'border-gray-300'
+                          }`}
+                        >
+                          <option value="">Select Role</option>
+                          {roles && [...roles.enterprise_roles, ...roles.functional_roles, ...roles.ai_powered_roles].map((role) => (
+                            <option key={role.id} value={role.id}>{role.name}</option>
+                          ))}
+                        </select>
+                        {formErrors.role_id && <p className="text-xs text-red-600 mt-1">{formErrors.role_id}</p>}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* AI Role Recommendations */}
+                  {roleRecommendations.length > 0 && (
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-3">
+                        <Brain className="w-5 h-5 text-purple-600" />
+                        <h4 className="font-semibold text-purple-900">AI Role Recommendations</h4>
+                      </div>
+                      <div className="space-y-2">
+                        {roleRecommendations.slice(0, 3).map((rec, index) => (
+                          <div key={rec.role.id} className="flex items-center justify-between bg-white rounded-lg p-3 border border-purple-100">
+                            <div className="flex-1">
+                              <div className="flex items-center space-x-2">
+                                <span className="font-medium text-gray-900">{rec.role.name}</span>
+                                <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">
+                                  {rec.confidence}% match
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-600 mt-1">{rec.reasoning.join(', ')}</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setNewUserForm(prev => ({ ...prev, role_id: rec.role.id.toString() }))}
+                              className="ml-3 px-3 py-1 text-xs bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
+                            >
+                              Select
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Additional Options */}
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="is_active"
+                        checked={newUserForm.is_active}
+                        onChange={(e) => setNewUserForm(prev => ({ ...prev, is_active: e.target.checked }))}
+                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                      />
+                      <label htmlFor="is_active" className="text-sm text-gray-700">Account is active</label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="send_welcome_email"
+                        checked={newUserForm.send_welcome_email}
+                        onChange={(e) => setNewUserForm(prev => ({ ...prev, send_welcome_email: e.target.checked }))}
+                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                      />
+                      <label htmlFor="send_welcome_email" className="text-sm text-gray-700">Send welcome email</label>
+                    </div>
+                  </div>
+
+                  {/* Form Actions */}
+                  <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
+                    <button
+                      type="button"
+                      onClick={() => setShowAddUserModal(false)}
+                      className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                    >
+                      {isSubmitting && <RefreshCw className="w-4 h-4 animate-spin" />}
+                      <span>{isSubmitting ? 'Creating...' : 'Create User'}</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* BULK IMPORT MODAL */}
+      <AnimatePresence>
+        {showBulkImportModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowBulkImportModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <Upload className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-900">Bulk Import Users</h2>
+                      <p className="text-sm text-gray-600">Upload a CSV file to create multiple users at once</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowBulkImportModal(false)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5 text-gray-500" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6">
+                {/* Status Messages */}
+                {submitStatus.type && (
+                  <div className={`p-4 rounded-lg border mb-6 ${
+                    submitStatus.type === 'success' 
+                      ? 'bg-green-50 border-green-200 text-green-800' 
+                      : 'bg-red-50 border-red-200 text-red-800'
+                  }`}>
+                    <div className="flex items-center space-x-2">
+                      {submitStatus.type === 'success' ? (
+                        <CheckCircle className="w-5 h-5" />
+                      ) : (
+                        <AlertTriangle className="w-5 h-5" />
+                      )}
+                      <span className="font-medium">{submitStatus.message}</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* CSV Template Download */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-blue-900">CSV Template</h3>
+                      <p className="text-sm text-blue-700">Download our template to ensure proper formatting</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const template = 'first_name,last_name,email,username,phone,department,position,role_name\n' +
+                                       'John,Doe,john.doe@rejlers.com,johndoe,+1234567890,engineering,Senior Engineer,Engineer\n' +
+                                       'Jane,Smith,jane.smith@rejlers.com,janesmith,+1234567891,human_resources,HR Manager,HR Manager';
+                        const blob = new Blob([template], { type: 'text/csv' });
+                        const url = window.URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = 'bulk_import_template.csv';
+                        link.click();
+                        window.URL.revokeObjectURL(url);
+                      }}
+                      className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>Download Template</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* File Upload */}
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Upload CSV File</label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
+                      <input
+                        type="file"
+                        accept=".csv"
+                        onChange={handleBulkImportFile}
+                        className="hidden"
+                        id="bulk-import-file"
+                      />
+                      <label htmlFor="bulk-import-file" className="cursor-pointer">
+                        <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-lg font-medium text-gray-900">Click to upload or drag and drop</p>
+                        <p className="text-sm text-gray-600">CSV files only</p>
+                      </label>
+                    </div>
+                    {bulkImportFile && (
+                      <p className="text-sm text-green-600 mt-2">✓ File uploaded: {bulkImportFile.name}</p>
+                    )}
+                  </div>
+
+                  {/* Preview Data */}
+                  {bulkImportPreview.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">Preview ({bulkImportData.length} total users)</h3>
+                      <div className="bg-gray-50 rounded-lg p-4 overflow-x-auto">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="border-b border-gray-200">
+                              {Object.keys(bulkImportPreview[0] || {}).map(key => (
+                                <th key={key} className="text-left py-2 px-3 font-medium text-gray-900 capitalize">
+                                  {key.replace(/_/g, ' ')}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {bulkImportPreview.map((row, index) => (
+                              <tr key={index} className="border-b border-gray-100">
+                                {Object.values(row).map((value: any, cellIndex) => (
+                                  <td key={cellIndex} className="py-2 px-3 text-gray-700">
+                                    {value || '-'}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                        {bulkImportData.length > 5 && (
+                          <p className="text-xs text-gray-500 mt-2">
+                            Showing first 5 rows. {bulkImportData.length - 5} more rows will be processed.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  <div className="flex items-center justify-end space-x-3 pt-6 border-t border-gray-200">
+                    <button
+                      onClick={() => setShowBulkImportModal(false)}
+                      className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleBulkCreateUsers}
+                      disabled={!bulkImportFile || bulkImportData.length === 0 || isSubmitting}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                    >
+                      {isSubmitting && <RefreshCw className="w-4 h-4 animate-spin" />}
+                      <span>{isSubmitting ? 'Importing...' : `Import ${bulkImportData.length} Users`}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* EXPORT MODAL */}
+      <AnimatePresence>
+        {showExportModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowExportModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-lg"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <Download className="w-6 h-6 text-green-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-900">Export Users</h2>
+                      <p className="text-sm text-gray-600">Download user data as CSV file</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowExportModal(false)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5 text-gray-500" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6">
+                {/* Status Messages */}
+                {submitStatus.type && (
+                  <div className={`p-4 rounded-lg border mb-6 ${
+                    submitStatus.type === 'success' 
+                      ? 'bg-green-50 border-green-200 text-green-800' 
+                      : 'bg-red-50 border-red-200 text-red-800'
+                  }`}>
+                    <div className="flex items-center space-x-2">
+                      {submitStatus.type === 'success' ? (
+                        <CheckCircle className="w-5 h-5" />
+                      ) : (
+                        <AlertTriangle className="w-5 h-5" />
+                      )}
+                      <span className="font-medium">{submitStatus.message}</span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <h3 className="font-semibold text-gray-900 mb-2">Export Details</h3>
+                    <ul className="text-sm text-gray-600 space-y-1">
+                      <li>• Total Users: {users.length}</li>
+                      <li>• Format: CSV (Comma Separated Values)</li>
+                      <li>• Includes: Personal info, roles, status, dates</li>
+                      <li>• Compatible with Excel and Google Sheets</li>
+                    </ul>
+                  </div>
+
+                  <div className="flex items-center justify-end space-x-3">
+                    <button
+                      onClick={() => setShowExportModal(false)}
+                      className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => {
+                        handleExportUsers();
+                        setShowExportModal(false);
+                      }}
+                      className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center space-x-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>Export CSV</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>

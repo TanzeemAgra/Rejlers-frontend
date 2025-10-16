@@ -295,6 +295,110 @@ class AuthService {
     const token = this.getAccessToken();
     return token ? { Authorization: `Bearer ${token}` } : {};
   }
+
+  // Admin Methods for User Management
+  
+  // Create new user (Admin only)
+  async createUser(userData: any): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/auth/users/create/`, {
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...this.getAuthHeader(),
+        },
+        body: JSON.stringify(userData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || errorData.message || 'User creation failed');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('User creation error:', error);
+      throw error;
+    }
+  }
+
+  // Bulk create users (Admin only)
+  async createBulkUsers(usersData: any[]): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/auth/users/bulk-create/`, {
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...this.getAuthHeader(),
+        },
+        body: JSON.stringify({ users: usersData })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || errorData.message || 'Bulk user creation failed');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Bulk user creation error:', error);
+      throw error;
+    }
+  }
+
+  // Get list of users (Admin only)
+  async getUsers(): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/auth/users/`, {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...this.getAuthHeader(),
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || errorData.message || 'Failed to fetch users');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Get users error:', error);
+      throw error;
+    }
+  }
+
+  // Get list of roles (Admin only)
+  async getRoles(): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/auth/roles/`, {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          ...this.getAuthHeader(),
+        }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.detail || errorData.message || 'Failed to fetch roles');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Get roles error:', error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance

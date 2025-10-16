@@ -1,249 +1,450 @@
-﻿'use client';
+﻿/**
+ * Main Dashboard Page
+ * ==================
+ * 
+ * Central dashboard with overview metrics and quick access to all modules
+ */
 
-import React, { useState, useEffect } from 'react';
-import { 
-  Building2, 
-  DollarSign, 
-  Users, 
-  TrendingUp, 
-  Shield, 
-  Package, 
-  FileText,
+'use client';
+
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  Users,
+  Building2,
+  DollarSign,
+  TrendingUp,
+  Calendar,
+  Clock,
+  Award,
   AlertTriangle,
   Activity,
-  BarChart3,
-  Settings
+  FileText,
+  Package,
+  Shield,
+  Crown,
+  ShieldCheck,
+  Brain,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
-import { authService } from '@/lib/auth';
-import { businessModuleService, DashboardStats, RecentActivity } from '@/lib/businessModules';
-import MockAuthSetup from '@/components/dev/MockAuthSetup';
+
+interface MetricCardProps {
+  title: string;
+  value: string | number;
+  change: string;
+  changeType: 'positive' | 'negative' | 'neutral';
+  icon: React.ReactNode;
+  color: string;
+}
+
+const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, changeType, icon, color }) => {
+  const getChangeColor = () => {
+    switch (changeType) {
+      case 'positive': return 'text-green-600';
+      case 'negative': return 'text-red-600';
+      default: return 'text-gray-600';
+    }
+  };
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+          <p className={`text-sm mt-1 ${getChangeColor()}`}>
+            {change}
+          </p>
+        </div>
+        <div className={`p-3 rounded-full ${color}`}>
+          {icon}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Dashboard: React.FC = () => {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [activities, setActivities] = useState<RecentActivity[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
+  // Mock data for metrics
+  const metrics = [
+    {
+      title: 'Total Employees',
+      value: 1234,
+      change: '+5.2% from last month',
+      changeType: 'positive' as const,
+      icon: <Users className="w-6 h-6 text-white" />,
+      color: 'bg-blue-500'
+    },
+    {
+      title: 'Active Projects',
+      value: 47,
+      change: '+3 this week',
+      changeType: 'positive' as const,
+      icon: <Building2 className="w-6 h-6 text-white" />,
+      color: 'bg-green-500'
+    },
+    {
+      title: 'Monthly Revenue',
+      value: '€2.4M',
+      change: '+12.5% from last month',
+      changeType: 'positive' as const,
+      icon: <DollarSign className="w-6 h-6 text-white" />,
+      color: 'bg-purple-500'
+    },
+    {
+      title: 'Performance Score',
+      value: '94.2%',
+      change: '+2.1% improvement',
+      changeType: 'positive' as const,
+      icon: <TrendingUp className="w-6 h-6 text-white" />,
+      color: 'bg-orange-500'
+    }
+  ];
 
-  useEffect(() => {
-    const initializeDashboard = async () => {
-      try {
-        if (!authService.isAuthenticated()) {
-          window.location.href = '/login';
-          return;
+  // SMART SOFT CODING: Advanced quick actions configuration with expandable features
+  const quickActions = [
+    {
+      title: 'HR AI Dashboard',
+      description: 'Advanced HR analytics and insights',
+      icon: <Users className="w-5 h-5 text-white" />,
+      href: '/hr/ai-dashboard',
+      color: 'bg-blue-500',
+      type: 'standard'
+    },
+    {
+      title: 'Super Admin AI Hub',
+      description: 'Enterprise-grade admin controls with AI-powered compliance management',
+      icon: <Crown className="w-5 h-5 text-white" />,
+      href: '/hr/ai-dashboard',
+      color: 'bg-gradient-to-r from-purple-600 to-blue-600',
+      type: 'expandable',
+      badge: 'NEW',
+      subFeatures: [
+        {
+          id: 'system-administration',
+          name: 'System Administration',
+          description: 'Core system administrative functions',
+          icon: <Shield className="w-4 h-4" />,
+          action: () => window.location.href = '/hr/ai-dashboard?module=super-admin-ai-hub&feature=system-administration'
+        },
+        {
+          id: 'ai-governance',
+          name: 'AI Governance',
+          description: 'AI system oversight and governance controls',
+          icon: <Brain className="w-4 h-4" />,
+          action: () => window.location.href = '/hr/ai-dashboard?module=super-admin-ai-hub&feature=ai-governance'
+        },
+        {
+          id: 'compliance-integration',
+          name: 'Compliance Integration',
+          description: 'Multi-regulatory compliance management (ISO 27001, GDPR, NIST, etc.)',
+          icon: <ShieldCheck className="w-4 h-4" />,
+          action: () => window.location.href = '/hr/ai-dashboard?module=super-admin-ai-hub&feature=compliance-integration',
+          highlight: true
+        },
+        {
+          id: 'rbac-management',
+          name: 'Advanced RBAC',
+          description: 'Role-based access control with compliance mapping',
+          icon: <Users className="w-4 h-4" />,
+          action: () => window.location.href = '/hr/ai-dashboard?module=super-admin-ai-hub&feature=rbac-management'
+        },
+        {
+          id: 'audit-intelligence',
+          name: 'AI Audit Intelligence',
+          description: 'Intelligent audit management and compliance tracking',
+          icon: <FileText className="w-4 h-4" />,
+          action: () => window.location.href = '/hr/ai-dashboard?module=super-admin-ai-hub&feature=audit-intelligence'
         }
+      ]
+    },
+    {
+      title: 'New Project',
+      description: 'Start a new project',
+      icon: <Building2 className="w-5 h-5 text-white" />,
+      href: '/projects/new',
+      color: 'bg-green-500',
+      type: 'standard'
+    },
+    {
+      title: 'Generate Invoice',
+      description: 'Create new client invoice',
+      icon: <FileText className="w-5 h-5 text-white" />,
+      href: '/finance/invoicing',
+      color: 'bg-purple-500',
+      type: 'standard'
+    },
+    {
+      title: 'View Reports',
+      description: 'Access detailed reports',
+      icon: <Activity className="w-5 h-5 text-white" />,
+      href: '/reports',
+      color: 'bg-orange-500',
+      type: 'standard'
+    },
+    {
+      title: 'Employee Management',
+      description: 'Manage employee profiles',
+      icon: <Users className="w-5 h-5 text-white" />,
+      href: '/hr/employees',
+      color: 'bg-indigo-500',
+      type: 'standard'
+    },
+    {
+      title: 'System Settings',
+      description: 'Configure system preferences',
+      icon: <Shield className="w-5 h-5 text-white" />,
+      href: '/settings',
+      color: 'bg-gray-500',
+      type: 'standard'
+    }
+  ];
 
-        const userInfo = authService.getUserData();
-        if (!userInfo) {
-          const fetchedUser = await authService.getCurrentUser();
-          if (!fetchedUser) {
-            throw new Error('Unable to fetch user data');
-          }
-          setUser(fetchedUser);
-        } else {
-          setUser(userInfo);
-        }
+  // SMART STATE MANAGEMENT: Expandable features state
+  const [expandedAction, setExpandedAction] = useState<string | null>(null);
+  const router = useRouter();
 
-        const [dashboardStats, recentActivities] = await Promise.all([
-          businessModuleService.getDashboardStats(),
-          businessModuleService.getRecentActivities(),
-        ]);
-
-        setStats(dashboardStats);
-        setActivities(recentActivities);
-      } catch (err) {
-        console.error('Error initializing dashboard:', err);
-        setError('Failed to load dashboard data');
-      } finally {
-        setLoading(false);
+  // SMART SOFT CODING: Enhanced Quick Action Component with expandable features
+  const EnhancedQuickActionCard = ({ action, index }: { action: any; index: number }) => {
+    const isExpanded = expandedAction === action.title;
+    const isExpandable = action.type === 'expandable';
+    
+    const handleMainAction = () => {
+      if (isExpandable) {
+        setExpandedAction(isExpanded ? null : action.title);
+      } else {
+        router.push(action.href);
       }
     };
 
-    initializeDashboard();
-  }, []);
-
-  if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading dashboard...</p>
+      <div className="relative">
+        {/* Main Action Card */}
+        <div
+          onClick={handleMainAction}
+          className={`
+            ${action.color} rounded-lg p-6 text-white cursor-pointer
+            transition-all duration-300 hover:shadow-lg transform hover:-translate-y-1
+            ${isExpanded ? 'shadow-xl scale-105' : 'shadow-sm'}
+            ${isExpandable ? 'border-2 border-white/20' : ''}
+          `}
+        >
+          <div className="flex items-start justify-between">
+            <div className="flex items-center space-x-3 flex-1">
+              <div className={`
+                p-2 rounded-lg 
+                ${isExpandable ? 'bg-white/20 backdrop-blur-sm' : 'bg-black/20'}
+              `}>
+                {action.icon}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center space-x-2">
+                  <h3 className="font-semibold text-white">{action.title}</h3>
+                  {action.badge && (
+                    <span className="px-2 py-1 text-xs font-bold bg-yellow-400 text-yellow-900 rounded-full">
+                      {action.badge}
+                    </span>
+                  )}
+                  {isExpandable && (
+                    <div className="ml-auto">
+                      {isExpanded ? (
+                        <ChevronDown className="w-4 h-4 text-white transition-transform" />
+                      ) : (
+                        <ChevronRight className="w-4 h-4 text-white transition-transform" />
+                      )}
+                    </div>
+                  )}
+                </div>
+                <p className="text-white/90 text-sm mt-1 leading-relaxed">
+                  {action.description}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* Expandable Sub-Features */}
+        {isExpandable && isExpanded && action.subFeatures && (
+          <div className="mt-3 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border-b border-gray-200 dark:border-gray-700">
+              <h4 className="font-semibold text-gray-900 dark:text-white flex items-center space-x-2">
+                <Crown className="w-4 h-4 text-purple-600" />
+                <span>Super Admin Features</span>
+              </h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Advanced administrative and compliance management tools
+              </p>
+            </div>
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
+              {action.subFeatures.map((subFeature: any, subIndex: number) => (
+                <div
+                  key={subFeature.id}
+                  onClick={subFeature.action}
+                  className={`
+                    p-4 cursor-pointer transition-all duration-200
+                    hover:bg-gray-50 dark:hover:bg-gray-700/50
+                    ${subFeature.highlight ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500' : ''}
+                  `}
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className={`
+                      p-2 rounded-lg
+                      ${subFeature.highlight 
+                        ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' 
+                        : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                      }
+                    `}>
+                      {subFeature.icon}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center space-x-2">
+                        <h5 className="font-medium text-gray-900 dark:text-white">
+                          {subFeature.name}
+                        </h5>
+                        {subFeature.highlight && (
+                          <span className="px-2 py-1 text-xs font-bold bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
+                            Featured
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">
+                        {subFeature.description}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="p-4 bg-gray-50 dark:bg-gray-700/50">
+              <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                Click any feature above to access advanced administrative controls
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     );
-  }
+  };
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="text-center">
-          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-          <p className="text-red-600 mb-4">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const recentActivities = [
+    {
+      id: 1,
+      title: 'New employee onboarded',
+      description: 'Sarah Johnson joined the Engineering team',
+      time: '2 hours ago',
+      icon: <Users className="w-4 h-4" />,
+      color: 'bg-blue-100 text-blue-600'
+    },
+    {
+      id: 2,
+      title: 'Project milestone completed',
+      description: 'Industrial Automation Project Phase 2',
+      time: '4 hours ago',
+      icon: <Award className="w-4 h-4" />,
+      color: 'bg-green-100 text-green-600'
+    },
+    {
+      id: 3,
+      title: 'Invoice generated',
+      description: 'Invoice #INV-2024-0156 for Client ABC',
+      time: '6 hours ago',
+      icon: <FileText className="w-4 h-4" />,
+      color: 'bg-purple-100 text-purple-600'
+    },
+    {
+      id: 4,
+      title: 'Performance review due',
+      description: '5 employees have pending reviews',
+      time: '8 hours ago',
+      icon: <Clock className="w-4 h-4" />,
+      color: 'bg-orange-100 text-orange-600'
+    }
+  ];
 
   return (
-    <div className="p-4 lg:p-6 bg-slate-50 min-h-full">
-      <div className="mb-6 lg:mb-8">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div className="flex-1">
-            <h2 className="text-xl lg:text-2xl font-bold text-slate-900 mb-2">
-              Welcome back, {user?.first_name || user?.username || 'User'}!
-            </h2>
-            <p className="text-sm lg:text-base text-slate-600">
-              {user?.is_superuser 
-                ? "System Administrator - You have full access to all system features and controls."
-                : user?.is_staff
-                ? "Administrator - You have elevated access to manage the organization."
-                : "Here's what's happening in your organization today."
-              }
-            </p>
-          </div>
-          {(user?.is_superuser || user?.is_staff) && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-purple-100 to-blue-100 rounded-lg border border-purple-200">
-              <Shield className="w-4 lg:w-5 h-4 lg:h-5 text-purple-600" />
-              <span className="text-xs lg:text-sm font-medium text-purple-700">
-                {user?.is_superuser ? 'Super Admin' : 'Administrator'}
-              </span>
-            </div>
-          )}
-        </div>
+    <div className="p-6 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard Overview</h1>
+        <p className="text-gray-600 dark:text-gray-400 mt-1">
+          Here's what's happening at Rejlers today.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6 lg:mb-8">
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <Building2 className="w-5 h-5 text-blue-600" />
-            </div>
-            <span className="text-sm font-medium text-slate-600">Projects</span>
-          </div>
-          <div className="space-y-2">
-            <p className="text-2xl font-bold text-slate-900">{stats?.projects?.total || '47'}</p>
-            <p className="text-sm text-slate-500">Active projects</p>
-          </div>
+        {/* Metrics Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {metrics.map((metric, index) => (
+            <MetricCard key={index} {...metric} />
+          ))}
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-5 h-5 text-green-600" />
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Quick Actions */}
+          <div className="lg:col-span-2">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {quickActions.map((action, index) => (
+                  <EnhancedQuickActionCard key={index} action={action} index={index} />
+                ))}
+              </div>
             </div>
-            <span className="text-sm font-medium text-slate-600">Revenue</span>
           </div>
-          <div className="space-y-2">
-            <p className="text-2xl font-bold text-slate-900">€{stats?.sales?.totalRevenue ? (stats.sales.totalRevenue / 1000000).toFixed(1) + 'M' : '2.4M'}</p>
-            <p className="text-sm text-green-600">+12.5% from last month</p>
-          </div>
-        </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-              <Users className="w-5 h-5 text-purple-600" />
+          {/* Recent Activity */}
+          <div className="lg:col-span-1">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h2>
+              <div className="space-y-4">
+                {recentActivities.map((activity) => (
+                  <div key={activity.id} className="flex items-start space-x-3">
+                    <div className={`p-2 rounded-full ${activity.color}`}>
+                      {activity.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                        {activity.title}
+                      </h3>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                        {activity.description}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                        {activity.time}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <span className="text-sm font-medium text-slate-600">Team</span>
-          </div>
-          <div className="space-y-2">
-            <p className="text-2xl font-bold text-slate-900">{stats?.hr?.totalEmployees || '156'}</p>
-            <p className="text-sm text-slate-500">Active employees</p>
-          </div>
-        </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border">
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-orange-600" />
-            </div>
-            <span className="text-sm font-medium text-slate-600">Growth</span>
-          </div>
-          <div className="space-y-2">
-            <p className="text-2xl font-bold text-slate-900">18.2%</p>
-            <p className="text-sm text-green-600">Year over year</p>
-          </div>
-        </div>
-      </div>
-
-      {user?.is_superuser && (
-        <div className="mb-8">
-          <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-6 rounded-lg border border-purple-200">
-            <div className="flex items-center gap-3 mb-4">
-              <Shield className="w-6 h-6 text-purple-600" />
-              <h3 className="text-lg font-semibold text-purple-900">Super Administrator Controls</h3>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className="bg-white p-4 rounded-lg shadow-sm border">
-                <div className="flex items-center justify-between mb-2">
-                  <Activity className="w-5 h-5 text-green-600" />
-                  <span className="text-xs font-medium text-slate-600">SYSTEM</span>
+            {/* System Status */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mt-6">
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">System Status</h2>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">API Status</span>
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                    Operational
+                  </span>
                 </div>
-                <div className="text-xl font-bold text-slate-900">98.5%</div>
-                <div className="text-xs text-slate-600">System Health</div>
-              </div>
-
-              <div className="bg-white p-4 rounded-lg shadow-sm border">
-                <div className="flex items-center justify-between mb-2">
-                  <Users className="w-5 h-5 text-blue-600" />
-                  <span className="text-xs font-medium text-slate-600">USERS</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">Database</span>
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                    Connected
+                  </span>
                 </div>
-                <div className="text-xl font-bold text-slate-900">247</div>
-                <div className="text-xs text-slate-600">Total Users</div>
-              </div>
-
-              <div className="bg-white p-4 rounded-lg shadow-sm border">
-                <div className="flex items-center justify-between mb-2">
-                  <AlertTriangle className="w-5 h-5 text-red-600" />
-                  <span className="text-xs font-medium text-slate-600">SECURITY</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">AI Services</span>
+                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                    Active
+                  </span>
                 </div>
-                <div className="text-xl font-bold text-slate-900">3</div>
-                <div className="text-xs text-slate-600">Alerts</div>
-              </div>
-
-              <div className="bg-white p-4 rounded-lg shadow-sm border">
-                <div className="flex items-center justify-between mb-2">
-                  <BarChart3 className="w-5 h-5 text-purple-600" />
-                  <span className="text-xs font-medium text-slate-600">UPTIME</span>
-                </div>
-                <div className="text-xl font-bold text-slate-900">99.9%</div>
-                <div className="text-xs text-slate-600">Server Uptime</div>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-semibold text-purple-900 mb-3">Quick Actions</h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <button className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-purple-50 border border-purple-200 rounded-lg text-sm font-medium text-purple-700 transition-colors">
-                  <Users className="w-4 h-4" />
-                  Manage Users
-                </button>
-                <button className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-purple-50 border border-purple-200 rounded-lg text-sm font-medium text-purple-700 transition-colors">
-                  <Settings className="w-4 h-4" />
-                  System Config
-                </button>
-                <button className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-purple-50 border border-purple-200 rounded-lg text-sm font-medium text-purple-700 transition-colors">
-                  <FileText className="w-4 h-4" />
-                  View Logs
-                </button>
-                <button className="flex items-center gap-2 px-3 py-2 bg-white hover:bg-purple-50 border border-purple-200 rounded-lg text-sm font-medium text-purple-700 transition-colors">
-                  <BarChart3 className="w-4 h-4" />
-                  Analytics
-                </button>
               </div>
             </div>
           </div>
         </div>
-      )}
-
-      {process.env.NODE_ENV === 'development' && <MockAuthSetup />}
     </div>
   );
 };

@@ -204,10 +204,10 @@ const BulletproofSidebar: React.FC<DashboardSidebarProps> = ({ isOpen, onClose }
       badgeColor: 'bg-purple-100 text-purple-800',
       hasSubmenu: true,
       items: [
-        { title: 'AI Control Center', icon: Brain, path: '/super-admin/ai-dashboard', badge: 'LIVE', badgeColor: 'bg-green-100 text-green-800' },
-        { title: 'Smart User Management', icon: Users, path: '/super-admin/user-management', badge: '247', badgeColor: 'bg-blue-100 text-blue-800' },
-        { title: 'AI Security Center', icon: Lock, path: '/super-admin/security', badge: '!', badgeColor: 'bg-red-100 text-red-800' },
-        { title: 'AI Model Configuration', icon: Cpu, path: '/super-admin/ai-config' }
+        { title: 'AI Control Center', icon: Brain, path: '/dashboard/super-admin/ai-dashboard', badge: 'LIVE', badgeColor: 'bg-green-100 text-green-800' },
+        { title: 'Smart User Management', icon: Users, path: '/dashboard/super-admin/user-management', badge: '247', badgeColor: 'bg-blue-100 text-blue-800' },
+        { title: 'AI Security Center', icon: Lock, path: '/dashboard/super-admin/security', badge: '!', badgeColor: 'bg-red-100 text-red-800' },
+        { title: 'AI Model Configuration', icon: Cpu, path: '/dashboard/super-admin/ai-config' }
       ]
     },
     {

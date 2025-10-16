@@ -973,7 +973,7 @@ export const getSidebarConfiguration = (): SidebarModule[] => {
           id: 'ai-dashboard',
           title: 'AI Control Center',
           icon: Brain,
-          path: '/super-admin/ai-dashboard',
+          path: '/dashboard/super-admin/ai-dashboard',
           badge: 'LIVE',
           badgeColor: 'green',
           description: 'AI-powered system monitoring and intelligent insights'
@@ -982,7 +982,7 @@ export const getSidebarConfiguration = (): SidebarModule[] => {
           id: 'user-management-ai',
           title: 'Smart User Management',
           icon: Users,
-          path: '/super-admin/user-management',
+          path: '/dashboard/super-admin/user-management',
           badge: '247',
           badgeColor: 'blue',
           description: 'AI-enhanced user lifecycle management and behavior analytics'
@@ -991,14 +991,14 @@ export const getSidebarConfiguration = (): SidebarModule[] => {
           id: 'role-permissions-ai',
           title: 'Intelligent Role Engine',
           icon: Shield,
-          path: '/super-admin/role-permissions',
+          path: '/dashboard/super-admin/role-permissions',
           description: 'Dynamic role assignment with AI-driven permission optimization'
         },
         {
           id: 'system-analytics-ai',
           title: 'Predictive Analytics',
           icon: BarChart3,
-          path: '/super-admin/analytics',
+          path: '/dashboard/super-admin/analytics',
           badge: 'ML',
           badgeColor: 'purple',
           description: 'Machine learning-powered system performance predictions'
@@ -1007,7 +1007,7 @@ export const getSidebarConfiguration = (): SidebarModule[] => {
           id: 'ai-automation',
           title: 'AI Automation Hub',
           icon: Bot,
-          path: '/super-admin/automation',
+          path: '/dashboard/super-admin/automation',
           badge: '12',
           badgeColor: 'green',
           description: 'Generative AI workflows and intelligent process automation'
@@ -1016,7 +1016,7 @@ export const getSidebarConfiguration = (): SidebarModule[] => {
           id: 'security-ai',
           title: 'AI Security Center',
           icon: Lock,
-          path: '/super-admin/security',
+          path: '/dashboard/super-admin/security',
           badge: '!',
           badgeColor: 'red',
           description: 'Advanced threat detection with AI-powered security monitoring'
@@ -1025,14 +1025,14 @@ export const getSidebarConfiguration = (): SidebarModule[] => {
           id: 'system-optimization',
           title: 'Smart System Optimizer',
           icon: Zap,
-          path: '/super-admin/optimization',
+          path: '/dashboard/super-admin/optimization',
           description: 'AI-driven system performance optimization and resource allocation'
         },
         {
           id: 'ai-insights',
           title: 'Enterprise AI Insights',
           icon: Brain,
-          path: '/super-admin/insights',
+          path: '/dashboard/super-admin/insights',
           badge: 'GPT',
           badgeColor: 'purple',
           description: 'Advanced generative AI insights and business intelligence'
@@ -1041,7 +1041,7 @@ export const getSidebarConfiguration = (): SidebarModule[] => {
           id: 'real-time-monitoring',
           title: 'Real-Time AI Monitor',
           icon: Activity,
-          path: '/super-admin/monitoring',
+          path: '/dashboard/super-admin/monitoring',
           badge: 'LIVE',
           badgeColor: 'green',
           description: 'Intelligent real-time system monitoring with predictive alerts'
@@ -1050,7 +1050,7 @@ export const getSidebarConfiguration = (): SidebarModule[] => {
           id: 'ai-configuration',
           title: 'AI Model Configuration',
           icon: Cpu,
-          path: '/super-admin/ai-config',
+          path: '/dashboard/super-admin/ai-config',
           description: 'Configure and fine-tune AI models and generative algorithms'
         }
       ]

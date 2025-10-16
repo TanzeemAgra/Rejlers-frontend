@@ -117,11 +117,12 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({
     } else {
       // Single y-axis
       if (chartConfig.groupBy) {
-        // Grouped data
-        const groups = [...new Set(chartData.map((item: any) => item[chartConfig.groupBy!]))];
+        // Grouped data - Soft coding approach for Set iteration compatibility
+        const uniqueGroups = new Set(chartData.map((item: any) => item[chartConfig.groupBy!]));
+        const groups = Array.from(uniqueGroups);
         datasets = groups.map((group, index) => ({
-          label: group,
-          data: labels.map((label) => {
+          label: String(group), // Ensure label is always a string
+          data: labels.map((label: any) => {
             const item = chartData.find((d: any) => 
               d[chartConfig.xAxis] === label && d[chartConfig.groupBy!] === group
             );
@@ -159,7 +160,8 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({
     return {
       responsive: true,
       maintainAspectRatio: false,
-      animation: chartConfig.animations ? {
+      // Soft coding approach: Properly handle animation configuration
+      animation: chartConfig.animations !== false ? {
         duration: 750,
         easing: 'easeInOutQuart' as const
       } : false,
@@ -229,22 +231,25 @@ const ChartWidget: React.FC<ChartWidgetProps> = ({
   }, [chartConfig, theme]);
 
   const getChartComponent = () => {
+    // Soft coding approach: Use type assertion to handle strict Chart.js typing
+    const chartOptions_any = chartOptions as any;
+    
     switch (chartConfig.type) {
       case ChartType.LINE:
       case ChartType.AREA:
-        return <Line data={processedChartData} options={chartOptions} />;
+        return <Line data={processedChartData} options={chartOptions_any} />;
       case ChartType.BAR:
-        return <Bar data={processedChartData} options={chartOptions} />;
+        return <Bar data={processedChartData} options={chartOptions_any} />;
       case ChartType.PIE:
-        return <Pie data={processedChartData} options={chartOptions} />;
+        return <Pie data={processedChartData} options={chartOptions_any} />;
       case ChartType.DOUGHNUT:
-        return <Doughnut data={processedChartData} options={chartOptions} />;
+        return <Doughnut data={processedChartData} options={chartOptions_any} />;
       case ChartType.RADAR:
-        return <Radar data={processedChartData} options={chartOptions} />;
+        return <Radar data={processedChartData} options={chartOptions_any} />;
       case ChartType.SCATTER:
-        return <Scatter data={processedChartData} options={chartOptions} />;
+        return <Scatter data={processedChartData} options={chartOptions_any} />;
       default:
-        return <Bar data={processedChartData} options={chartOptions} />;
+        return <Bar data={processedChartData} options={chartOptions_any} />;
     }
   };
 

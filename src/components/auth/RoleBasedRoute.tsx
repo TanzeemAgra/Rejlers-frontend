@@ -13,7 +13,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useRBAC } from '../../contexts/RBACContext';
+import { useRBAC } from '@/contexts/RBACContext';
+import { useSafePathname, getSafePathname } from '@/hooks/useSafePathname';
 // Import components (will create these next)
 // import LoadingSpinner from '../ui/LoadingSpinner';
 // import AccessDenied from './AccessDenied';
@@ -48,6 +49,8 @@ const RoleBasedRoute: React.FC<RoleBasedRouteProps> = ({
 }) => {
   const router = useRouter();
   const pathname = usePathname();
+  // Use safe pathname with soft coding fallback
+  const safePathname = useSafePathname();
   const { 
     state, 
     hasRole, 
@@ -130,8 +133,8 @@ const RoleBasedRoute: React.FC<RoleBasedRouteProps> = ({
           }
         }
 
-        // AI Risk Assessment
-        const routeRisk = getPredictedRisk(pathname);
+        // AI Risk Assessment with Soft Coding - Use safe pathname
+        const routeRisk = getPredictedRisk(safePathname);
         const userRisk = state.user.riskProfile?.aiRiskScore || 0;
         const combinedRisk = Math.max(routeRisk, userRisk);
         
@@ -198,7 +201,7 @@ const RoleBasedRoute: React.FC<RoleBasedRouteProps> = ({
     state.isLoading, 
     state.isAuthenticated, 
     state.user, 
-    pathname,
+    safePathname, // Use safe pathname in dependencies
     requiredRoles,
     requiredPermissions,
     requiredPermissionLevel,
@@ -220,7 +223,7 @@ const RoleBasedRoute: React.FC<RoleBasedRouteProps> = ({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          route: pathname,
+          route: safePathname, // Use safe pathname
           access_granted: true,
           risk_score: riskAnalysis.riskScore,
           timestamp: new Date().toISOString(),
@@ -244,7 +247,7 @@ const RoleBasedRoute: React.FC<RoleBasedRouteProps> = ({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          route: pathname,
+          route: safePathname, // Use safe pathname
           access_granted: false,
           risk_score: riskAnalysis.riskScore,
           blocking_factors: reasons,
@@ -259,12 +262,13 @@ const RoleBasedRoute: React.FC<RoleBasedRouteProps> = ({
   // Redirect to fallback if unauthorized
   useEffect(() => {
     if (accessCheckComplete && isAuthorized === false && !state.isLoading) {
+      // Use safe pathname for comparison
       // Don't redirect if we're already on the fallback path or login page
-      if (pathname !== fallbackPath && pathname !== '/login' && pathname !== '/') {
+      if (safePathname !== fallbackPath && safePathname !== '/login' && safePathname !== '/') {
         router.push(fallbackPath);
       }
     }
-  }, [accessCheckComplete, isAuthorized, router, fallbackPath, pathname, state.isLoading]);
+  }, [accessCheckComplete, isAuthorized, router, fallbackPath, safePathname, state.isLoading]);
 
   // Show loading spinner
   if (state.isLoading || !accessCheckComplete) {

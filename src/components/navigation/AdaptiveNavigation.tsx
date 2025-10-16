@@ -14,6 +14,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useSafePathname } from '../../hooks/useSafePathname';
 import { useRBAC } from '../../contexts/RBACContext';
 import PermissionGuard from '../auth/PermissionGuard';
 
@@ -234,7 +235,8 @@ const AdaptiveNavigation: React.FC<AdaptiveNavigationProps> = ({
   enablePersonalization = true,
   maxVisibleItems = 10,
 }) => {
-  const pathname = usePathname();
+  // Soft coding approach: Use safe pathname handling to prevent null errors
+  const safePathname = useSafePathname();
   const { state, getAccessPattern } = useRBAC();
   
   const [userPreferences, setUserPreferences] = useState<Map<string, number>>(new Map());
@@ -357,7 +359,7 @@ const AdaptiveNavigation: React.FC<AdaptiveNavigationProps> = ({
     item, 
     isChild = false 
   }) => {
-    const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+    const isActive = safePathname === item.href || safePathname.startsWith(item.href + '/');
     const isRecommended = aiRecommendations.includes(item.id);
     
     return (
@@ -418,7 +420,7 @@ const AdaptiveNavigation: React.FC<AdaptiveNavigationProps> = ({
           </Link>
           
           {/* Sub-items */}
-          {item.children && item.children.length > 0 && (isActive || pathname.startsWith(item.href)) && (
+          {item.children && item.children.length > 0 && (isActive || safePathname.startsWith(item.href)) && (
             <div className="mt-1 space-y-1">
               {item.children.map(child => (
                 <NavItem key={child.id} item={child} isChild={true} />

@@ -17,6 +17,9 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   DashboardLayout, 
   WidgetConfig, 
+  MetricCardConfig,
+  ChartConfig,
+  TableConfig,
   HR_DASHBOARD_LAYOUTS, 
   DashboardConfigManager,
   WidgetType 
@@ -379,48 +382,84 @@ const HRAIDashboard: React.FC<HRAIDashboardProps> = ({ className = '' }) => {
     const widgetData = realTimeData[widget.id] || {};
     const isSelected = state.selectedWidget === widget.id;
     
-    const commonProps = {
-      config: widget,
-      data: widgetData,
-      isCustomizing: state.isCustomizing,
-      isSelected,
-      onSelect: () => setState(prev => ({ ...prev, selectedWidget: widget.id })),
-      onUpdate: (updates: Partial<WidgetConfig>) => updateWidget(widget.id, updates),
-      onRemove: () => removeWidget(widget.id),
-      theme,
-      density
+    // Soft coding approach: Create type-safe props with proper type guards
+    const getComponentWithTypedProps = () => {
+      const baseProps = {
+        data: widgetData,
+        isCustomizing: state.isCustomizing,
+        isSelected,
+        onSelect: () => setState(prev => ({ ...prev, selectedWidget: widget.id })),
+        onUpdate: (updates: Partial<WidgetConfig>) => updateWidget(widget.id, updates),
+        onRemove: () => removeWidget(widget.id),
+        theme,
+        density
+      };
+
+      // Use type-safe configuration based on widget type
+      switch (widget.type) {
+        case WidgetType.METRIC_CARD:
+          return (
+            <MetricCardWidget 
+              {...baseProps} 
+              config={widget as MetricCardConfig} 
+            />
+          );
+        case WidgetType.CHART:
+          return (
+            <ChartWidget 
+              {...baseProps} 
+              config={widget as ChartConfig} 
+            />
+          );
+        case WidgetType.TABLE:
+          return (
+            <TableWidget 
+              {...baseProps} 
+              config={widget as TableConfig} 
+            />
+          );
+        case WidgetType.AI_INSIGHT:
+          return (
+            <AIInsightWidget 
+              {...baseProps} 
+              config={widget as WidgetConfig} 
+            />
+          );
+        case WidgetType.PROGRESS:
+          return (
+            <ProgressWidget 
+              {...baseProps} 
+              config={widget as WidgetConfig} 
+            />
+          );
+        case WidgetType.CALENDAR:
+          return (
+            <CalendarWidget 
+              {...baseProps} 
+              config={widget as WidgetConfig} 
+            />
+          );
+        case WidgetType.NOTIFICATION:
+          return (
+            <NotificationWidget 
+              {...baseProps} 
+              config={widget as WidgetConfig} 
+            />
+          );
+        case WidgetType.INTERACTIVE:
+          return (
+            <InteractiveWidget 
+              {...baseProps} 
+              config={widget as WidgetConfig} 
+            />
+          );
+        default:
+          return null;
+      }
     };
 
-    let WidgetComponent;
-    
-    switch (widget.type) {
-      case WidgetType.METRIC_CARD:
-        WidgetComponent = MetricCardWidget;
-        break;
-      case WidgetType.CHART:
-        WidgetComponent = ChartWidget;
-        break;
-      case WidgetType.TABLE:
-        WidgetComponent = TableWidget;
-        break;
-      case WidgetType.AI_INSIGHT:
-        WidgetComponent = AIInsightWidget;
-        break;
-      case WidgetType.PROGRESS:
-        WidgetComponent = ProgressWidget;
-        break;
-      case WidgetType.CALENDAR:
-        WidgetComponent = CalendarWidget;
-        break;
-      case WidgetType.NOTIFICATION:
-        WidgetComponent = NotificationWidget;
-        break;
-      case WidgetType.INTERACTIVE:
-        WidgetComponent = InteractiveWidget;
-        break;
-      default:
-        return null;
-    }
+    const WidgetComponent = getComponentWithTypedProps();
+    if (!WidgetComponent) return null;
 
     return (
       <motion.div
@@ -440,7 +479,7 @@ const HRAIDashboard: React.FC<HRAIDashboardProps> = ({ className = '' }) => {
           gridRow: `span ${widget.position.height}`
         }}
       >
-        <WidgetComponent {...commonProps} />
+        {WidgetComponent}
       </motion.div>
     );
   }, [realTimeData, state.isCustomizing, state.selectedWidget, theme, density, updateWidget, removeWidget]);

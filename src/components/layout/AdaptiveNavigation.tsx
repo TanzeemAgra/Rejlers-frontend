@@ -42,7 +42,8 @@ interface AdaptiveNavigationProps {
  * - Security-aware menu items
  */
 const AdaptiveNavigation: React.FC<AdaptiveNavigationProps> = ({ className = '' }) => {
-  const { state, checkPermission, hasRole, getContext } = useRBAC();
+  // Soft coding approach: Only destructure methods that are actually needed
+  const { state, checkPermission, hasRole } = useRBAC();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [filteredNavigation, setFilteredNavigation] = useState<NavigationItem[]>([]);

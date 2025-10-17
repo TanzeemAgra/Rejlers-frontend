@@ -617,13 +617,15 @@ const AIPoweredUserManagement: React.FC = () => {
           console.log('🔍 Loading real users from backend...');
           const realUsers = await loadRealUsers();
           if (realUsers && realUsers.length > 0) {
+            console.log('✅ Successfully loaded real users:', realUsers.length);
             setUsers(realUsers);
-            console.log('✅ Loaded real users:', realUsers.length);
+            console.log('📊 Sample user data:', realUsers[0]);
           } else {
-            throw new Error('No real users found, falling back to mock');
+            console.log('⚠️ No real users found, generating mock users...');
+            generateMockUsers(systemData, rolesData);
           }
         } catch (error) {
-          console.log('⚠️ Failed to load real users, using mock data:', error);
+          console.error('❌ Failed to load real users, using mock data:', error);
           // Fallback to mock users with proper UUIDs
           generateMockUsers(systemData, rolesData);
         }
@@ -642,22 +644,62 @@ const AIPoweredUserManagement: React.FC = () => {
   // Function to load real users from backend API
   const loadRealUsers = async (): Promise<User[]> => {
     try {
-      // Use the rbacService to get users since it might have a users endpoint
-      const response = await fetch(`${config.api.baseUrl}/api/v1/auth/users/`, {
+      console.log('🔄 Loading real users from API...');
+      
+      // Get the access token
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        throw new Error('No access token found');
+      }
+      
+      // Make API call to get users
+      const response = await fetch(`${config.api.baseUrl}/auth/users/`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
       
+      console.log('📡 API Response status:', response.status);
+      
       if (response.ok) {
         const data = await response.json();
-        return data.results || data; // Handle both paginated and non-paginated responses
+        console.log('📦 Raw API data:', data);
+        
+        // Handle both paginated and non-paginated responses
+        const users = Array.isArray(data) ? data : (data.results || []);
+        console.log('👥 Parsed users count:', users.length);
+        
+        // Transform backend user data to frontend User interface
+        const transformedUsers: User[] = users.map((apiUser: any) => ({
+          id: apiUser.id,
+          name: `${apiUser.first_name} ${apiUser.last_name}`.trim() || apiUser.username,
+          email: apiUser.email,
+          role: apiUser.role?.name || 'No Role',
+          roleId: apiUser.role?.id || '',
+          department: apiUser.department || 'N/A',
+          status: apiUser.is_active ? 'Active' : 'Inactive',
+          aiRecommendations: ['Standard Access'], // Default AI recommendation
+          employeeId: apiUser.employee_id || 'N/A',
+          phone: apiUser.phone_number || 'N/A',
+          jobTitle: apiUser.job_title || 'N/A',
+          company: apiUser.company_name || 'REJLERS AB',
+          isActive: apiUser.is_active,
+          isVerified: apiUser.is_verified,
+          isApproved: apiUser.is_approved,
+          createdAt: apiUser.created_at,
+          updatedAt: apiUser.updated_at
+        }));
+        
+        console.log('✅ Transformed users:', transformedUsers.length);
+        return transformedUsers;
       } else {
-        throw new Error(`Failed to load users: ${response.status}`);
+        const errorText = await response.text();
+        console.error('❌ API Error:', response.status, errorText);
+        throw new Error(`Failed to load users: ${response.status} - ${errorText}`);
       }
     } catch (error) {
-      console.error('Failed to load real users:', error);
+      console.error('❌ Failed to load real users:', error);
       throw error;
     }
   };

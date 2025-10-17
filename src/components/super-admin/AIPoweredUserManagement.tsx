@@ -45,6 +45,8 @@ import {
 } from 'lucide-react';
 import { rbacService, Role, User, UserPermissions, SystemInfo } from '@/lib/rbac';
 import { authService } from '@/lib/auth';
+import { enhancedAuthService } from '@/lib/enhancedAuthService';
+import { AuthDebugModal } from '@/components/debug/AuthDebugModal';
 import { 
   validateUserData, 
   type UserCreationRequest,
@@ -89,6 +91,7 @@ const AIPoweredUserManagement: React.FC = () => {
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const [showBulkImportModal, setShowBulkImportModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showAuthDebugModal, setShowAuthDebugModal] = useState(false);
   const [newUserForm, setNewUserForm] = useState({
     first_name: '',
     last_name: '',
@@ -391,8 +394,8 @@ const AIPoweredUserManagement: React.FC = () => {
     try {
       console.log('🚀 Creating user with validated data:', userCreationData);
       
-      // Call API to create user using authService with soft coding transformation
-      const newUser = await authService.createUser(userCreationData);
+      // Call API to create user using enhanced authService with automatic token refresh
+      const newUser = await enhancedAuthService.createUser(userCreationData);
       setUsers(prev => [...prev, newUser]);
       setSubmitStatus({ type: 'success', message: 'User created successfully!' });
       
@@ -420,7 +423,34 @@ const AIPoweredUserManagement: React.FC = () => {
         
     } catch (error) {
       console.error('Error creating user:', error);
-      setSubmitStatus({ type: 'error', message: 'Network error. Please try again.' });
+      
+      // Enhanced error handling with specific messages
+      let errorMessage = 'Network error. Please try again.';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Authentication required')) {
+          errorMessage = 'Your session has expired. Please refresh the page and try again.';
+        } else if (error.message.includes('permission')) {
+          errorMessage = 'You do not have permission to create users. Contact your administrator.';
+        } else if (error.message.includes('validation')) {
+          errorMessage = 'Please check your input data and try again.';
+        } else if (error.message.includes('Network')) {
+          errorMessage = 'Connection error. Please check your internet connection and try again.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      setSubmitStatus({ type: 'error', message: errorMessage });
+      
+      // Show debug suggestion for authentication errors
+      if (error instanceof Error && error.message.includes('Authentication required')) {
+        setTimeout(() => {
+          if (window.confirm('Would you like to open the authentication debug tool to diagnose the issue?')) {
+            setShowAuthDebugModal(true);
+          }
+        }, 2000);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -901,6 +931,14 @@ const AIPoweredUserManagement: React.FC = () => {
             >
               <UserPlus className="w-4 h-4" />
               <span>Add User</span>
+            </button>
+            <button 
+              onClick={() => setShowAuthDebugModal(true)}
+              className="flex items-center space-x-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              title="Debug Authentication Issues"
+            >
+              <Shield className="w-4 h-4" />
+              <span>Debug</span>
             </button>
           </div>
         </div>
@@ -1758,6 +1796,12 @@ const AIPoweredUserManagement: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Authentication Debug Modal */}
+      <AuthDebugModal
+        isOpen={showAuthDebugModal}
+        onClose={() => setShowAuthDebugModal(false)}
+      />
     </div>
   );
 };

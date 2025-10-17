@@ -295,10 +295,98 @@ class AuthService {
     return !!this.getAccessToken();
   }
 
-  // Get authentication header for API calls
-  getAuthHeader(): Record<string, string> {
+  // Get authentication header for API calls with automatic token refresh
+  async getAuthHeader(): Promise<Record<string, string>> {
+    let token = this.getAccessToken();
+    
+    // If no token, try to refresh
+    if (!token) {
+      console.log('🔄 No access token found, attempting refresh...');
+      const refreshed = await this.refreshAccessToken();
+      if (refreshed) {
+        token = this.getAccessToken();
+      }
+    }
+    
+    // Validate token is not expired (basic check)
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const currentTime = Math.floor(Date.now() / 1000);
+        
+        // If token expires in less than 1 minute, refresh it
+        if (payload.exp && payload.exp - currentTime < 60) {
+          console.log('🔄 Token expires soon, refreshing...');
+          const refreshed = await this.refreshAccessToken();
+          if (refreshed) {
+            token = this.getAccessToken();
+          }
+        }
+      } catch (error) {
+        console.warn('Token validation error:', error);
+      }
+    }
+    
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+
+  // Synchronous version for compatibility
+  getAuthHeaderSync(): Record<string, string> {
     const token = this.getAccessToken();
     return token ? { Authorization: `Bearer ${token}` } : {};
+  }
+
+  // Enhanced API call method with automatic token refresh
+  private async makeAuthenticatedRequest(url: string, options: RequestInit = {}): Promise<Response> {
+    // First attempt with current token
+    const authHeader = await this.getAuthHeader();
+    
+    const requestOptions: RequestInit = {
+      ...options,
+      mode: 'cors',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...authHeader,
+        ...options.headers,
+      },
+    };
+
+    let response = await fetch(url, requestOptions);
+    
+    // If 401, try to refresh token and retry once
+    if (response.status === 401) {
+      console.log('🔄 401 received, attempting token refresh...');
+      const refreshed = await this.refreshAccessToken();
+      
+      if (refreshed) {
+        console.log('✅ Token refreshed, retrying request...');
+        // Update auth header with new token
+        const newAuthHeader = await this.getAuthHeader();
+        const retryOptions: RequestInit = {
+          ...requestOptions,
+          headers: {
+            ...requestOptions.headers,
+            ...newAuthHeader,
+          },
+        };
+        
+        response = await fetch(url, retryOptions);
+      } else {
+        console.log('❌ Token refresh failed, redirecting to login...');
+        // Clear invalid tokens
+        this.clearTokens();
+        
+        // In a real app, you'd redirect to login page
+        if (typeof window !== 'undefined') {
+          window.location.href = '/login';
+        }
+        
+        throw new Error('Authentication required. Please log in again.');
+      }
+    }
+    
+    return response;
   }
 
   // Admin Methods for User Management
@@ -314,14 +402,8 @@ class AuthService {
         transformed: backendPayload
       });
 
-      const response = await fetch(`${this.baseUrl}/auth/users/create/`, {
+      const response = await this.makeAuthenticatedRequest(`${this.baseUrl}/auth/users/create/`, {
         method: 'POST',
-        mode: 'cors',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          ...this.getAuthHeader(),
-        },
         body: JSON.stringify(backendPayload)
       });
 

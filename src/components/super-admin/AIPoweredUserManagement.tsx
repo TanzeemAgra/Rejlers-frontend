@@ -45,6 +45,11 @@ import {
 } from 'lucide-react';
 import { rbacService, Role, User, UserPermissions, SystemInfo } from '@/lib/rbac';
 import { authService } from '@/lib/auth';
+import { 
+  validateUserData, 
+  type UserCreationRequest,
+  ERROR_MESSAGES 
+} from '@/config/userApiConfig';
 
 // AI-Powered Role Recommendation Engine
 interface AIRoleRecommendation {
@@ -353,36 +358,41 @@ const AIPoweredUserManagement: React.FC = () => {
     setIsSubmitting(true);
     setSubmitStatus({ type: null, message: '' });
     
-    // Validate form
-    const errors = validateUserForm(newUserForm);
-    setFormErrors(errors);
+    // Prepare user data for validation using soft coding types
+    const userCreationData: UserCreationRequest = {
+      first_name: newUserForm.first_name,
+      last_name: newUserForm.last_name,
+      email: newUserForm.email,
+      username: newUserForm.username,
+      phone: newUserForm.phone,
+      department: newUserForm.department,
+      position: newUserForm.position,
+      password: newUserForm.password,
+      role_id: parseInt(newUserForm.role_id),
+      is_active: newUserForm.is_active,
+      send_welcome_email: newUserForm.send_welcome_email,
+      created_via: 'super_admin_interface',
+      ai_recommended_role: roleRecommendations.length > 0 ? Number(roleRecommendations[0].role.id) : null
+    };
     
-    if (Object.keys(errors).length > 0) {
+    // Validate form using soft coding configuration
+    const validationErrors = validateUserData(userCreationData);
+    setFormErrors(validationErrors);
+    
+    if (Object.keys(validationErrors).length > 0) {
       setIsSubmitting(false);
-      setSubmitStatus({ type: 'error', message: 'Please fix the validation errors before submitting.' });
+      setSubmitStatus({ 
+        type: 'error', 
+        message: ERROR_MESSAGES.VALIDATION_ERROR 
+      });
       return;
     }
     
     try {
-      // Prepare user data for API
-      const userData = {
-        first_name: newUserForm.first_name.trim(),
-        last_name: newUserForm.last_name.trim(),
-        email: newUserForm.email.trim().toLowerCase(),
-        username: newUserForm.username.trim().toLowerCase(),
-        phone: newUserForm.phone.trim(),
-        department: newUserForm.department.trim(),
-        position: newUserForm.position.trim(),
-        password: newUserForm.password,
-        role_id: parseInt(newUserForm.role_id),
-        is_active: newUserForm.is_active,
-        send_welcome_email: newUserForm.send_welcome_email,
-        created_via: 'super_admin_interface',
-        ai_recommended_role: roleRecommendations.length > 0 ? roleRecommendations[0].role.id : null
-      };
+      console.log('🚀 Creating user with validated data:', userCreationData);
       
-      // Call API to create user using authService
-      const newUser = await authService.createUser(userData);
+      // Call API to create user using authService with soft coding transformation
+      const newUser = await authService.createUser(userCreationData);
       setUsers(prev => [...prev, newUser]);
       setSubmitStatus({ type: 'success', message: 'User created successfully!' });
       

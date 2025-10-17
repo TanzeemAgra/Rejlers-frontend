@@ -1,4 +1,9 @@
 import { config } from '@/config';
+import { 
+  transformUserDataForAPI, 
+  parseAPIError, 
+  type UserCreationRequest 
+} from '@/config/userApiConfig';
 
 // Authentication Types
 export interface LoginCredentials {
@@ -299,8 +304,16 @@ class AuthService {
   // Admin Methods for User Management
   
   // Create new user (Admin only)
-  async createUser(userData: any): Promise<any> {
+  async createUser(userData: UserCreationRequest): Promise<any> {
     try {
+      // Transform frontend data to backend API format using soft coding
+      const backendPayload = transformUserDataForAPI(userData);
+      
+      console.log('🔄 Creating user with transformed data:', {
+        original: userData,
+        transformed: backendPayload
+      });
+
       const response = await fetch(`${this.baseUrl}/auth/users/create/`, {
         method: 'POST',
         mode: 'cors',
@@ -309,17 +322,34 @@ class AuthService {
           'Content-Type': 'application/json',
           ...this.getAuthHeader(),
         },
-        body: JSON.stringify(userData)
+        body: JSON.stringify(backendPayload)
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || errorData.message || 'User creation failed');
+        let errorData;
+        try {
+          errorData = await response.json();
+        } catch {
+          errorData = {};
+        }
+        
+        console.error('❌ User creation failed:', {
+          status: response.status,
+          statusText: response.statusText,
+          errorData,
+          payload: backendPayload
+        });
+        
+        // Use soft coding for error parsing
+        const errorMessage = parseAPIError(errorData, response);
+        throw new Error(errorMessage);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log('✅ User created successfully:', result);
+      return result;
     } catch (error) {
-      console.error('User creation error:', error);
+      console.error('💥 User creation error:', error);
       throw error;
     }
   }

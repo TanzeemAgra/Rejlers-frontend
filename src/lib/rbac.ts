@@ -28,11 +28,16 @@ export interface User {
   job_title: string;
   department: string;
   position: string;
+  phone_number?: string;
+  phone?: string;
   is_staff: boolean;
   is_superuser: boolean;
   is_approved: boolean;
   is_verified: boolean;
+  is_active: boolean;
   created_at: string;
+  date_joined?: string;
+  last_login?: string;
 }
 
 export interface ModulePermission {

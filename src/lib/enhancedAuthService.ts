@@ -368,6 +368,127 @@ export class EnhancedAuthService {
       return null;
     }
   }
+
+  // User management methods for super admin actions
+  async deleteUser(userId: string): Promise<void> {
+    try {
+      const response = await this.makeAuthenticatedRequest(
+        `${this.baseUrl}/api/v1/auth/users/${userId}/delete/`,
+        {
+          method: 'DELETE',
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete user');
+      }
+
+      if (authConfig.debugMode) {
+        console.log('✅ User deleted successfully:', userId);
+      }
+    } catch (error) {
+      if (authConfig.debugMode) {
+        console.error('❌ Failed to delete user:', error);
+      }
+      throw error;
+    }
+  }
+
+  async toggleUserStatus(userId: string, action: 'activate' | 'deactivate'): Promise<void> {
+    try {
+      const response = await this.makeAuthenticatedRequest(
+        `${this.baseUrl}/api/v1/auth/users/${userId}/activate/`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ action }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update user status');
+      }
+
+      if (authConfig.debugMode) {
+        console.log(`✅ User ${action}d successfully:`, userId);
+      }
+    } catch (error) {
+      if (authConfig.debugMode) {
+        console.error('❌ Failed to toggle user status:', error);
+      }
+      throw error;
+    }
+  }
+
+  async resetUserPassword(userId: string): Promise<{ temporary_password: string }> {
+    try {
+      const response = await this.makeAuthenticatedRequest(
+        `${this.baseUrl}/api/v1/auth/users/${userId}/reset-password/`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to reset password');
+      }
+
+      const result = await response.json();
+      
+      if (authConfig.debugMode) {
+        console.log('✅ Password reset successfully:', userId);
+      }
+
+      return result;
+    } catch (error) {
+      if (authConfig.debugMode) {
+        console.error('❌ Failed to reset password:', error);
+      }
+      throw error;
+    }
+  }
+
+  async updateUser(userId: string, userData: any): Promise<any> {
+    try {
+      const response = await this.makeAuthenticatedRequest(
+        `${this.baseUrl}/api/v1/auth/users/${userId}/`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        const parsedError = parseAPIError(errorData);
+        throw new Error(parsedError);
+      }
+
+      const result = await response.json();
+      
+      if (authConfig.debugMode) {
+        console.log('✅ User updated successfully:', userId);
+      }
+
+      return result;
+    } catch (error) {
+      if (authConfig.debugMode) {
+        console.error('❌ Failed to update user:', error);
+      }
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance

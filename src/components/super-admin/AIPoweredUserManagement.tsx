@@ -92,6 +92,9 @@ const AIPoweredUserManagement: React.FC = () => {
   const [showBulkImportModal, setShowBulkImportModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showAuthDebugModal, setShowAuthDebugModal] = useState(false);
+  const [showUserDetailModal, setShowUserDetailModal] = useState(false);
+  const [showEditUserModal, setShowEditUserModal] = useState(false);
+  const [showActionDropdown, setShowActionDropdown] = useState<string | null>(null);
   const [newUserForm, setNewUserForm] = useState({
     first_name: '',
     last_name: '',
@@ -105,6 +108,17 @@ const AIPoweredUserManagement: React.FC = () => {
     role_id: '',
     is_active: true,
     send_welcome_email: true
+  });
+  const [editUserForm, setEditUserForm] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    username: '',
+    phone: '',
+    department: '',
+    position: '',
+    role_id: '',
+    is_active: true,
   });
   const [bulkImportFile, setBulkImportFile] = useState<File | null>(null);
   const [bulkImportData, setBulkImportData] = useState<any[]>([]);
@@ -569,6 +583,20 @@ const AIPoweredUserManagement: React.FC = () => {
     }
   }, [newUserForm.department, newUserForm.position, roles]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showActionDropdown) {
+        setShowActionDropdown(null);
+      }
+    };
+
+    if (showActionDropdown) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [showActionDropdown]);
+
   // Data Loading useEffect
   useEffect(() => {
     const loadData = async () => {
@@ -608,6 +636,7 @@ const AIPoweredUserManagement: React.FC = () => {
                 is_superuser: roleData.role_name === 'Super Admin',
                 is_approved: true,
                 is_verified: true,
+                is_active: true,
                 created_at: new Date().toISOString()
               });
             }
@@ -640,6 +669,106 @@ const AIPoweredUserManagement: React.FC = () => {
       setShowRoleAssignment(false);
     } catch (error) {
       console.error('Error assigning role:', error);
+    }
+  };
+
+  // User Action Handlers
+  const handleViewUser = (user: User) => {
+    setSelectedUser(user);
+    setShowUserDetailModal(true);
+  };
+
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user);
+    setEditUserForm({
+      first_name: user.first_name,
+      last_name: user.last_name,
+      email: user.email,
+      username: user.username,
+      phone: user.phone_number || user.phone || '',
+      department: user.department || '',
+      position: user.job_title || user.position || '',
+      role_id: user.role?.id || '',
+      is_active: user.is_active,
+    });
+    setShowEditUserModal(true);
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await enhancedAuthService.deleteUser(userId);
+      setUsers(prev => prev.filter(user => user.id !== userId));
+      
+      // Show success message
+      setSubmitStatus({
+        type: 'success',
+        message: 'User deleted successfully.'
+      });
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      setSubmitStatus({
+        type: 'error',
+        message: 'Failed to delete user. Please try again.'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleUserStatus = async (userId: string, currentStatus: boolean) => {
+    try {
+      setLoading(true);
+      const action = currentStatus ? 'deactivate' : 'activate';
+      await enhancedAuthService.toggleUserStatus(userId, action);
+      
+      // Update local state
+      setUsers(prev => prev.map(user => 
+        user.id === userId 
+          ? { ...user, is_active: !currentStatus, is_verified: !currentStatus }
+          : user
+      ));
+
+      setSubmitStatus({
+        type: 'success',
+        message: `User ${action}d successfully.`
+      });
+    } catch (error) {
+      console.error('Error toggling user status:', error);
+      setSubmitStatus({
+        type: 'error',
+        message: 'Failed to update user status. Please try again.'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (userId: string) => {
+    if (!confirm('Are you sure you want to reset this user\'s password? A new temporary password will be generated.')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const result = await enhancedAuthService.resetUserPassword(userId);
+      
+      setSubmitStatus({
+        type: 'success',
+        message: `Password reset successfully. Temporary password: ${result.temporary_password}`
+      });
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      setSubmitStatus({
+        type: 'error',
+        message: 'Failed to reset password. Please try again.'
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -1031,22 +1160,93 @@ const AIPoweredUserManagement: React.FC = () => {
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end space-x-2">
+                      <div className="flex items-center justify-end space-x-1">
+                        {/* View User */}
                         <button
-                          onClick={() => {
-                            setSelectedUser(user);
-                            setShowRoleAssignment(true);
-                          }}
-                          className="text-purple-600 hover:text-purple-900 p-1 rounded"
+                          onClick={() => handleViewUser(user)}
+                          title="View Details"
+                          className="text-blue-600 hover:text-blue-900 p-2 rounded-lg hover:bg-blue-50 transition-colors"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+
+                        {/* Edit User */}
+                        <button
+                          onClick={() => handleEditUser(user)}
+                          title="Edit User"
+                          className="text-purple-600 hover:text-purple-900 p-2 rounded-lg hover:bg-purple-50 transition-colors"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button className="text-blue-600 hover:text-blue-900 p-1 rounded">
-                          <Eye className="w-4 h-4" />
+
+                        {/* User Status Toggle */}
+                        <button
+                          onClick={() => handleToggleUserStatus(user.id, user.is_active)}
+                          title={user.is_active ? 'Deactivate User' : 'Activate User'}
+                          className={`p-2 rounded-lg transition-colors ${
+                            user.is_active 
+                              ? 'text-orange-600 hover:text-orange-900 hover:bg-orange-50' 
+                              : 'text-green-600 hover:text-green-900 hover:bg-green-50'
+                          }`}
+                        >
+                          {user.is_active ? <Lock className="w-4 h-4" /> : <Unlock className="w-4 h-4" />}
                         </button>
-                        <button className="text-gray-600 hover:text-gray-900 p-1 rounded">
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
+
+                        {/* More Actions Dropdown */}
+                        <div className="relative">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowActionDropdown(showActionDropdown === user.id ? null : user.id);
+                            }}
+                            className="text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                          >
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+
+                          {/* Dropdown Menu */}
+                          {showActionDropdown === user.id && (
+                            <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                              <div className="py-1">
+                                <button
+                                  onClick={() => {
+                                    setSelectedUser(user);
+                                    setShowRoleAssignment(true);
+                                    setShowActionDropdown(null);
+                                  }}
+                                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                                >
+                                  <Shield className="w-4 h-4" />
+                                  <span>Assign Role</span>
+                                </button>
+                                
+                                <button
+                                  onClick={() => {
+                                    handleResetPassword(user.id);
+                                    setShowActionDropdown(null);
+                                  }}
+                                  className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2"
+                                >
+                                  <RefreshCw className="w-4 h-4" />
+                                  <span>Reset Password</span>
+                                </button>
+
+                                <div className="border-t border-gray-100"></div>
+                                
+                                <button
+                                  onClick={() => {
+                                    handleDeleteUser(user.id);
+                                    setShowActionDropdown(null);
+                                  }}
+                                  className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                  <span>Delete User</span>
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </td>
                   </motion.tr>
@@ -1800,6 +2000,423 @@ const AIPoweredUserManagement: React.FC = () => {
                       <span>Export CSV</span>
                     </button>
                   </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* User Edit Modal */}
+      <AnimatePresence>
+        {showEditUserModal && selectedUser && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowEditUserModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            >
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900 flex items-center space-x-2">
+                      <Edit className="w-6 h-6 text-purple-600" />
+                      <span>Edit User</span>
+                    </h2>
+                    <p className="text-gray-600 mt-1">
+                      Update information for {selectedUser.first_name} {selectedUser.last_name}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setShowEditUserModal(false)}
+                    className="text-gray-400 hover:text-gray-600 p-2"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-6 space-y-6">
+                <form className="space-y-6">
+                  {/* Name Fields */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        First Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={editUserForm.first_name}
+                        onChange={(e) => setEditUserForm(prev => ({ ...prev, first_name: e.target.value }))}
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="First name"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Last Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={editUserForm.last_name}
+                        onChange={(e) => setEditUserForm(prev => ({ ...prev, last_name: e.target.value }))}
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="Last name"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Contact Fields */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Email *
+                      </label>
+                      <input
+                        type="email"
+                        value={editUserForm.email}
+                        onChange={(e) => setEditUserForm(prev => ({ ...prev, email: e.target.value }))}
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="Email address"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Phone
+                      </label>
+                      <input
+                        type="tel"
+                        value={editUserForm.phone}
+                        onChange={(e) => setEditUserForm(prev => ({ ...prev, phone: e.target.value }))}
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="Phone number"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Username */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Username *
+                    </label>
+                    <input
+                      type="text"
+                      value={editUserForm.username}
+                      onChange={(e) => setEditUserForm(prev => ({ ...prev, username: e.target.value }))}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      placeholder="Username"
+                    />
+                  </div>
+
+                  {/* Work Information */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Department
+                      </label>
+                      <input
+                        type="text"
+                        value={editUserForm.department}
+                        onChange={(e) => setEditUserForm(prev => ({ ...prev, department: e.target.value }))}
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="Department"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Position
+                      </label>
+                      <input
+                        type="text"
+                        value={editUserForm.position}
+                        onChange={(e) => setEditUserForm(prev => ({ ...prev, position: e.target.value }))}
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="Job position"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Role Selection */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Role
+                    </label>
+                    <select
+                      value={editUserForm.role_id}
+                      onChange={(e) => setEditUserForm(prev => ({ ...prev, role_id: e.target.value }))}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    >
+                      <option value="">Select a role</option>
+                      {roles?.enterprise_roles.map(role => (
+                        <option key={role.id} value={role.id}>
+                          {role.name} (Enterprise)
+                        </option>
+                      ))}
+                      {roles?.functional_roles.map(role => (
+                        <option key={role.id} value={role.id}>
+                          {role.name} (Functional)
+                        </option>
+                      ))}
+                      {roles?.ai_powered_roles.map(role => (
+                        <option key={role.id} value={role.id}>
+                          {role.name} (AI-Powered)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Status Toggle */}
+                  <div className="flex items-center space-x-3">
+                    <label className="flex items-center space-x-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={editUserForm.is_active}
+                        onChange={(e) => setEditUserForm(prev => ({ ...prev, is_active: e.target.checked }))}
+                        className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Active User</span>
+                    </label>
+                  </div>
+                </form>
+
+                {/* Action Buttons */}
+                <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                  <button
+                    onClick={() => setShowEditUserModal(false)}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={async () => {
+                      try {
+                        setLoading(true);
+                        await enhancedAuthService.updateUser(selectedUser.id, {
+                          first_name: editUserForm.first_name,
+                          last_name: editUserForm.last_name,
+                          email: editUserForm.email,
+                          username: editUserForm.username,
+                          phone_number: editUserForm.phone,
+                          department: editUserForm.department,
+                          job_title: editUserForm.position,
+                          role: editUserForm.role_id || null,
+                          is_active: editUserForm.is_active,
+                        });
+                        
+                        // Update local state
+                        setUsers(prev => prev.map(user => 
+                          user.id === selectedUser.id 
+                            ? { 
+                                ...user, 
+                                first_name: editUserForm.first_name,
+                                last_name: editUserForm.last_name,
+                                email: editUserForm.email,
+                                username: editUserForm.username,
+                                phone_number: editUserForm.phone,
+                                department: editUserForm.department,
+                                job_title: editUserForm.position,
+                                is_active: editUserForm.is_active,
+                                role: editUserForm.role_id ? roles ? [...roles.enterprise_roles, ...roles.functional_roles, ...roles.ai_powered_roles].find(r => r.id === editUserForm.role_id) || null : null : null
+                              }
+                            : user
+                        ));
+                        
+                        setShowEditUserModal(false);
+                        setSubmitStatus({
+                          type: 'success',
+                          message: 'User updated successfully.'
+                        });
+                      } catch (error) {
+                        console.error('Error updating user:', error);
+                        setSubmitStatus({
+                          type: 'error',
+                          message: 'Failed to update user. Please try again.'
+                        });
+                      } finally {
+                        setLoading(false);
+                      }
+                    }}
+                    className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
+                  >
+                    <span>Update User</span>
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* User Detail Modal */}
+      <AnimatePresence>
+        {showUserDetailModal && selectedUser && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowUserDetailModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            >
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                      {selectedUser.first_name.charAt(0)}{selectedUser.last_name.charAt(0)}
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">
+                        {selectedUser.first_name} {selectedUser.last_name}
+                      </h2>
+                      <p className="text-gray-600">{selectedUser.email}</p>
+                      <p className="text-sm text-gray-500">ID: {selectedUser.employee_id}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setShowUserDetailModal(false)}
+                    className="text-gray-400 hover:text-gray-600 p-2"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="p-6 space-y-6">
+                {/* User Status */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Account Status</h3>
+                    <div className="flex items-center space-x-2">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        selectedUser.is_verified 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {selectedUser.is_verified ? (
+                          <><CheckCircle className="w-3 h-3 mr-1" />Active</>
+                        ) : (
+                          <><AlertTriangle className="w-3 h-3 mr-1" />Inactive</>
+                        )}
+                      </span>
+                      {selectedUser.is_superuser && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                          <Crown className="w-3 h-3 mr-1" />Super Admin
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 bg-gray-50 rounded-lg">
+                    <h3 className="text-sm font-medium text-gray-700 mb-2">Role</h3>
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      selectedUser.role ? rbacService.getRoleCategoryColor(selectedUser.role.name) : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {selectedUser.role ? rbacService.getRoleCategoryIcon(selectedUser.role.name) : '👤'} {selectedUser.role?.name || 'No Role'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Contact Information */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Contact Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-3">
+                      <Mail className="w-5 h-5 text-gray-400" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Email</p>
+                        <p className="text-sm text-gray-900">{selectedUser.email}</p>
+                      </div>
+                    </div>
+                    {selectedUser.phone_number && (
+                      <div className="flex items-center space-x-3">
+                        <Phone className="w-5 h-5 text-gray-400" />
+                        <div>
+                          <p className="text-sm font-medium text-gray-700">Phone</p>
+                          <p className="text-sm text-gray-900">{selectedUser.phone_number}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Work Information */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Work Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-3">
+                      <Building2 className="w-5 h-5 text-gray-400" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Department</p>
+                        <p className="text-sm text-gray-900">{selectedUser.department || 'Not specified'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Users className="w-5 h-5 text-gray-400" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Position</p>
+                        <p className="text-sm text-gray-900">{selectedUser.job_title || selectedUser.position || 'Not specified'}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Account Information */}
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Account Information</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center space-x-3">
+                      <Calendar className="w-5 h-5 text-gray-400" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Created</p>
+                        <p className="text-sm text-gray-900">
+                          {selectedUser.date_joined ? new Date(selectedUser.date_joined).toLocaleDateString() : 'Not available'}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Activity className="w-5 h-5 text-gray-400" />
+                      <div>
+                        <p className="text-sm font-medium text-gray-700">Last Login</p>
+                        <p className="text-sm text-gray-900">
+                          {selectedUser.last_login ? new Date(selectedUser.last_login).toLocaleDateString() : 'Never'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                  <button
+                    onClick={() => {
+                      setShowUserDetailModal(false);
+                      handleEditUser(selectedUser);
+                    }}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
+                  >
+                    <Edit className="w-4 h-4" />
+                    <span>Edit User</span>
+                  </button>
+                  <button
+                    onClick={() => setShowUserDetailModal(false)}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors"
+                  >
+                    Close
+                  </button>
                 </div>
               </div>
             </motion.div>

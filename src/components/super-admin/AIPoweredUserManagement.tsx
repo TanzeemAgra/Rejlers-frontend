@@ -371,6 +371,7 @@ const AIPoweredUserManagement: React.FC = () => {
       department: newUserForm.department,
       position: newUserForm.position,
       password: newUserForm.password,
+      confirm_password: newUserForm.confirm_password, // Add confirm_password from form
       role_id: parseInt(newUserForm.role_id),
       is_active: newUserForm.is_active,
       send_welcome_email: newUserForm.send_welcome_email,
@@ -1316,8 +1317,9 @@ const AIPoweredUserManagement: React.FC = () => {
                           className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
                             formErrors.first_name ? 'border-red-300' : 'border-gray-300'
                           }`}
-                          placeholder="Enter first name"
+                          placeholder="e.g., John"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Enter the user's first name</p>
                         {formErrors.first_name && <p className="text-xs text-red-600 mt-1">{formErrors.first_name}</p>}
                       </div>
 
@@ -1330,8 +1332,9 @@ const AIPoweredUserManagement: React.FC = () => {
                           className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
                             formErrors.last_name ? 'border-red-300' : 'border-gray-300'
                           }`}
-                          placeholder="Enter last name"
+                          placeholder="e.g., Smith"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Enter the user's last name</p>
                         {formErrors.last_name && <p className="text-xs text-red-600 mt-1">{formErrors.last_name}</p>}
                       </div>
 
@@ -1344,8 +1347,9 @@ const AIPoweredUserManagement: React.FC = () => {
                           className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
                             formErrors.email ? 'border-red-300' : 'border-gray-300'
                           }`}
-                          placeholder="user@rejlers.com"
+                          placeholder="john.smith@rejlers.com"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Enter a valid company email address</p>
                         {formErrors.email && <p className="text-xs text-red-600 mt-1">{formErrors.email}</p>}
                       </div>
 
@@ -1358,8 +1362,9 @@ const AIPoweredUserManagement: React.FC = () => {
                           className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
                             formErrors.username ? 'border-red-300' : 'border-gray-300'
                           }`}
-                          placeholder="username"
+                          placeholder="johnsmith123"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Letters, numbers, underscore, and dash only (min 3 chars)</p>
                         {formErrors.username && <p className="text-xs text-red-600 mt-1">{formErrors.username}</p>}
                       </div>
 
@@ -1370,8 +1375,9 @@ const AIPoweredUserManagement: React.FC = () => {
                           value={newUserForm.phone}
                           onChange={(e) => setNewUserForm(prev => ({ ...prev, phone: e.target.value }))}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                          placeholder="+1 (555) 123-4567"
+                          placeholder="+46 70 123 45 67"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Include country code (optional)</p>
                       </div>
                     </div>
 
@@ -1397,6 +1403,7 @@ const AIPoweredUserManagement: React.FC = () => {
                           <option value="legal">Legal</option>
                           <option value="executive">Executive</option>
                         </select>
+                        <p className="text-xs text-gray-500 mt-1">Choose the user's primary department</p>
                       </div>
 
                       <div>
@@ -1408,6 +1415,7 @@ const AIPoweredUserManagement: React.FC = () => {
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                           placeholder="e.g., Senior Engineer, HR Manager"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Enter the user's job title or position</p>
                       </div>
 
                       <div>
@@ -1421,6 +1429,7 @@ const AIPoweredUserManagement: React.FC = () => {
                           }`}
                           placeholder="Minimum 8 characters"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Must be at least 8 characters long</p>
                         {formErrors.password && <p className="text-xs text-red-600 mt-1">{formErrors.password}</p>}
                       </div>
 
@@ -1435,6 +1444,7 @@ const AIPoweredUserManagement: React.FC = () => {
                           }`}
                           placeholder="Re-enter password"
                         />
+                        <p className="text-xs text-gray-500 mt-1">Must match the password above</p>
                         {formErrors.confirm_password && <p className="text-xs text-red-600 mt-1">{formErrors.confirm_password}</p>}
                       </div>
 

@@ -11,6 +11,7 @@ export interface UserCreationRequest {
   department: string;
   position: string;
   password: string;
+  confirm_password: string; // Add confirm_password field
   role_id: number;
   is_active: boolean;
   send_welcome_email: boolean;
@@ -118,7 +119,7 @@ export const transformUserDataForAPI = (frontendData: UserCreationRequest): Back
     department: frontendData.department.trim(),
     job_title: frontendData.position.trim(),  // Map position -> job_title
     password: frontendData.password,
-    password_confirm: frontendData.password,  // Add required password confirmation
+    password_confirm: frontendData.confirm_password,  // Use actual confirm_password from form
     company_name: API_FIELD_MAPPING.company_name.default, // Use default company name
   };
 
@@ -169,6 +170,11 @@ export const validateUserData = (userData: UserCreationRequest): Record<string, 
   // Password validation
   if (userData.password && userData.password.length < VALIDATION_CONFIG.password_validation.min_length) {
     errors.password = VALIDATION_CONFIG.password_validation.message;
+  }
+
+  // Password confirmation validation
+  if (userData.password !== userData.confirm_password) {
+    errors.confirm_password = 'Passwords do not match';
   }
 
   // Username validation

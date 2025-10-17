@@ -47,6 +47,7 @@ import { rbacService, Role, User, UserPermissions, SystemInfo } from '@/lib/rbac
 import { authService } from '@/lib/auth';
 import { enhancedAuthService } from '@/lib/enhancedAuthService';
 import { AuthDebugModal } from '@/components/debug/AuthDebugModal';
+import { config } from '@/config';
 import { 
   validateUserData, 
   type UserCreationRequest,
@@ -611,37 +612,20 @@ const AIPoweredUserManagement: React.FC = () => {
         setSystemInfo(systemData);
         setCurrentUserPermissions(permissionsData);
         
-        // Load users from system info
-        if (systemData.role_distribution) {
-          // Mock user data based on role distribution
-          const mockUsers: User[] = [];
-          systemData.role_distribution.forEach((roleData, index) => {
-            for (let i = 0; i < Math.min(roleData.user_count, 5); i++) {
-              mockUsers.push({
-                id: `${index}-${i}`,
-                username: `user_${roleData.role_name.toLowerCase().replace(/\s+/g, '_')}_${i + 1}`,
-                email: `${roleData.role_name.toLowerCase().replace(/\s+/g, '.')}${i + 1}@rejlers.com`,
-                first_name: `User`,
-                last_name: `${i + 1}`,
-                role: rolesData.enterprise_roles.find(r => r.name === roleData.role_name) || 
-                      rolesData.functional_roles.find(r => r.name === roleData.role_name) || 
-                      rolesData.ai_powered_roles.find(r => r.name === roleData.role_name) || null,
-                employee_id: `EMP${1000 + index * 10 + i}`,
-                company_name: 'Rejlers',
-                job_title: roleData.role_name,
-                department: rbacService.getRoleCategory(roleData.role_name) === 'enterprise' ? 'Executive' : 
-                           rbacService.getRoleCategory(roleData.role_name) === 'functional' ? 'Operations' : 'AI Division',
-                position: roleData.role_name,
-                is_staff: ['Super Admin', 'Chief Digital Officer (CDO)', 'CTO/IT Director'].includes(roleData.role_name),
-                is_superuser: roleData.role_name === 'Super Admin',
-                is_approved: true,
-                is_verified: true,
-                is_active: true,
-                created_at: new Date().toISOString()
-              });
-            }
-          });
-          setUsers(mockUsers);
+        // Try to load real users from backend first
+        try {
+          console.log('🔍 Loading real users from backend...');
+          const realUsers = await loadRealUsers();
+          if (realUsers && realUsers.length > 0) {
+            setUsers(realUsers);
+            console.log('✅ Loaded real users:', realUsers.length);
+          } else {
+            throw new Error('No real users found, falling back to mock');
+          }
+        } catch (error) {
+          console.log('⚠️ Failed to load real users, using mock data:', error);
+          // Fallback to mock users with proper UUIDs
+          generateMockUsers(systemData, rolesData);
         }
         
         setLoading(false);
@@ -654,6 +638,72 @@ const AIPoweredUserManagement: React.FC = () => {
     
     loadData();
   }, []);
+
+  // Function to load real users from backend API
+  const loadRealUsers = async (): Promise<User[]> => {
+    try {
+      // Use the rbacService to get users since it might have a users endpoint
+      const response = await fetch(`${config.api.baseUrl}/api/v1/auth/users/`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data.results || data; // Handle both paginated and non-paginated responses
+      } else {
+        throw new Error(`Failed to load users: ${response.status}`);
+      }
+    } catch (error) {
+      console.error('Failed to load real users:', error);
+      throw error;
+    }
+  };
+
+  // Function to generate mock users with proper UUIDs
+  const generateMockUsers = (systemData: any, rolesData: any) => {
+    if (systemData.role_distribution) {
+      const mockUsers: User[] = [];
+      systemData.role_distribution.forEach((roleData: any, index: number) => {
+        for (let i = 0; i < Math.min(roleData.user_count, 5); i++) {
+          // Generate proper UUID format for mock users
+          const mockId = `${crypto.randomUUID ? crypto.randomUUID() : 
+            'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+              const r = Math.random() * 16 | 0;
+              const v = c == 'x' ? r : (r & 0x3 | 0x8);
+              return v.toString(16);
+            })}`;
+          
+          mockUsers.push({
+            id: mockId,
+            username: `user_${roleData.role_name.toLowerCase().replace(/\s+/g, '_')}_${i + 1}`,
+            email: `${roleData.role_name.toLowerCase().replace(/\s+/g, '.')}${i + 1}@rejlers.com`,
+            first_name: `User`,
+            last_name: `${i + 1}`,
+            role: rolesData.enterprise_roles.find((r: any) => r.name === roleData.role_name) || 
+                  rolesData.functional_roles.find((r: any) => r.name === roleData.role_name) || 
+                  rolesData.ai_powered_roles.find((r: any) => r.name === roleData.role_name) || null,
+            employee_id: `EMP${1000 + index * 10 + i}`,
+            company_name: 'Rejlers',
+            job_title: roleData.role_name,
+            department: rbacService.getRoleCategory(roleData.role_name) === 'enterprise' ? 'Executive' : 
+                       rbacService.getRoleCategory(roleData.role_name) === 'functional' ? 'Operations' : 'AI Division',
+            position: roleData.role_name,
+            is_staff: ['Super Admin', 'Chief Digital Officer (CDO)', 'CTO/IT Director'].includes(roleData.role_name),
+            is_superuser: roleData.role_name === 'Super Admin',
+            is_approved: true,
+            is_verified: true,
+            is_active: true,
+            created_at: new Date().toISOString()
+          });
+        }
+      });
+      setUsers(mockUsers);
+      console.log('✅ Generated mock users with UUIDs:', mockUsers.length);
+    }
+  };
 
   // Role Assignment Handler
   const handleRoleAssignment = async (userId: string, roleId: string) => {

@@ -72,9 +72,10 @@ class BusinessModuleService {
 
   // Make authenticated API calls
   private async apiCall(endpoint: string): Promise<any> {
+    const authHeader = await authService.getAuthHeader();
     const headers = {
       'Content-Type': 'application/json',
-      ...authService.getAuthHeader(),
+      ...authHeader,
     };
 
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
@@ -86,11 +87,12 @@ class BusinessModuleService {
         // Try to refresh token
         const refreshed = await authService.refreshAccessToken();
         if (refreshed) {
-          // Retry the request
+          // Retry the request with fresh auth header
+          const freshAuthHeader = await authService.getAuthHeader();
           const retryResponse = await fetch(`${this.baseUrl}${endpoint}`, {
             headers: {
               'Content-Type': 'application/json',
-              ...authService.getAuthHeader(),
+              ...freshAuthHeader,
             },
           });
           if (retryResponse.ok) {

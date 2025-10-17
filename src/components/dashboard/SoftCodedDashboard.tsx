@@ -95,8 +95,9 @@ const SoftCodedDashboard: React.FC = () => {
           let response;
           try {
             // Try to get data from business module service
+            const authHeader = await authService.getAuthHeader();
             response = await fetch(`${businessModuleService.getBaseUrl()}${widget.apiEndpoint}`, {
-              headers: { ...authService.getAuthHeader() }
+              headers: { ...authHeader }
             }).then(res => res.json());
           } catch {
             response = null;

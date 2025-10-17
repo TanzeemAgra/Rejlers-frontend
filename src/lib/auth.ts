@@ -439,13 +439,14 @@ class AuthService {
   // Bulk create users (Admin only)
   async createBulkUsers(usersData: any[]): Promise<any> {
     try {
+      const authHeader = await this.getAuthHeader();
       const response = await fetch(`${this.baseUrl}/auth/users/bulk-create/`, {
         method: 'POST',
         mode: 'cors',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          ...this.getAuthHeader(),
+          ...authHeader,
         },
         body: JSON.stringify({ users: usersData })
       });
@@ -465,13 +466,14 @@ class AuthService {
   // Get list of users (Admin only)
   async getUsers(): Promise<any> {
     try {
+      const authHeader = await this.getAuthHeader();
       const response = await fetch(`${this.baseUrl}/auth/users/`, {
         method: 'GET',
         mode: 'cors',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          ...this.getAuthHeader(),
+          ...authHeader,
         }
       });
 
@@ -490,13 +492,14 @@ class AuthService {
   // Get list of roles (Admin only)
   async getRoles(): Promise<any> {
     try {
+      const authHeader = await this.getAuthHeader();
       const response = await fetch(`${this.baseUrl}/auth/roles/`, {
         method: 'GET',
         mode: 'cors',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          ...this.getAuthHeader(),
+          ...authHeader,
         }
       });
 
